@@ -1,12 +1,16 @@
 ---
+import AuthorCard from '@/components/AuthorCard.astro'
+import BlogCard from '@/components/BlogCard.astro'
 import Breadcrumbs from '@/components/Breadcrumbs.astro'
-import Link from '@/components/Link.astro'
 import PageHead from '@/components/PageHead.astro'
 import ProjectCard from '@/components/ProjectCard.astro'
 import Layout from '@/layouts/Layout.astro'
-import { getAllProjects } from '@/lib/data-utils'
+import { getAuthorById, getPostsById, getProjectsById } from '@/lib/data-utils'
+import { Icon } from 'astro-icon/components'
 
-const projects = await getAllProjects()
+const projects = await getProjectsById(['dl2-save-editor'])
+const blogPosts = await getPostsById(['post-1', 'post-2'])
+const me = await getAuthorById('me')
 ---
 
 <Layout class="max-w-3xl">
@@ -14,34 +18,85 @@ const projects = await getAllProjects()
   <Breadcrumbs items={[{ label: 'About', icon: 'lucide:info' }]} />
 
   <section>
-    <div class="min-w-full">
-      <div class="prose mb-8">
-        <p class="mt-0">
-          astro-erudite is an opinionated, unstyled static blogging template
-          that prioritizes simplicity and performance, built with <Link
-            href="https://astro.build"
-            external
-            underline>Astro</Link
-          >, <Link href="https://tailwindcss.com" external underline
-            >Tailwind</Link
-          >, and <Link href="https://ui.shadcn.com" external underline
-            >shadcn/ui</Link
-          >. It provides a clean foundation for your content while being
-          extremely easy to customize.
-        </p>
-        <p>
-          To learn more about the philosophy behind this template, check out the
-          following blog post: <Link
-            href="/blog/the-state-of-static-blogs"
-            underline>The State of Static Blogs in 2024</Link
-          >.
-        </p>
-      </div>
+    <div class="mb-8 min-w-full">
+      {me && <AuthorCard author={me} />}
 
-      <h2 class="mb-4 text-2xl font-medium">Example Projects Listing</h2>
-      <div class="flex flex-col gap-4">
-        {projects.map((project) => <ProjectCard project={project} />)}
+      <div class="prose mb-8">
+        <p class="text-muted-foreground my-2 text-sm">
+          <div class="flex flex-row items-center gap-1 p-6">
+            <Icon
+              name="lucide:file-chart-pie"
+              class="text-primary-foreground size-4"
+            /> Data Engineer
+            <Icon
+              name="lucide:code"
+              class="text-primary-foreground ml-4 size-4"
+            /> Programmer
+            <Icon
+              name="lucide:gamepad-2"
+              class="text-primary-foreground ml-4 size-4"
+            /> Gamer <Icon
+              name="lucide:guitar"
+              class="text-primary-foreground ml-4 size-4"
+            /> Musician
+          </div>
+        </p>
+        <div class="p-6 pt-0">
+          <p class="text-primary-foreground my-2 mb-2 text-sm">
+            Welcome to my personal website! Here you can find projects I've
+            worked on, blog posts I've written, documentation about my Open
+            Source projects, and more about my interests and hobbies.
+          </p>
+          <p class="text-primary-foreground my-2 text-sm">
+            I'm always looking for new challenges and opportunities to learn and
+            grow.
+          </p>
+          <p class="text-primary-foreground my-2 text-sm">
+            When I'm not coding, you can find me in front of the piano or
+            enjoying games (from chess to mostly all trendy video games).
+          </p>
+          <p class="text-primary-foreground mt-6 text-sm">
+            Feel free to browse my repositories and reach out to me if you have
+            any questions or would like to collaborate on a project.
+          </p>
+        </div>
       </div>
     </div>
+
+    <section class="flex flex-col gap-y-4">
+      <h2 class="text-2xl font-medium">Pinned Projects</h2>
+      {
+        projects.length > 0 ? (
+          <ul class="flex flex-col gap-4">
+            {projects.map((project) => (
+              <li>
+                <ProjectCard project={project} />
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p class="text-muted-foreground">No pinned projects.</p>
+        )
+      }
+    </section>
+
+    <section class="flex flex-col gap-y-4">
+      <h2 class="text-2xl font-medium">Pinned Blogs</h2>
+      {
+        blogPosts.length > 0 ? (
+          <ul class="flex flex-col gap-4">
+            {blogPosts
+              .filter((post) => !post.data.draft)
+              .map((post) => (
+                <li>
+                  <BlogCard entry={post} />
+                </li>
+              ))}
+          </ul>
+        ) : (
+          <p class="text-muted-foreground">No pinned blogs.</p>
+        )
+      }
+    </section>
   </section>
 </Layout>

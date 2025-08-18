@@ -1,24 +1,23 @@
 import type { IconMap, SocialLink, Site } from '@/types'
 
 export const SITE: Site = {
-  title: 'astro-erudite',
-  description:
-    'astro-erudite is a opinionated, unstyled blogging template—built with Astro, Tailwind, and shadcn/ui.',
-  href: 'https://astro-erudite.vercel.app',
-  author: 'jktrn',
-  locale: 'en-US',
+  title: 'Marcel-TO',
+  description: 'A developer’s journey: learning, debugging, and creating.',
+  href: 'https://marcel-to.vercel.app',
+  author: 'Marcel-TO',
+  locale: 'de-DE',
   featuredPostCount: 2,
   postsPerPage: 3,
 }
 
 export const NAV_LINKS: SocialLink[] = [
   {
-    href: '/blog',
-    label: 'blog',
+    href: '/projects',
+    label: 'projects',
   },
   {
-    href: '/authors',
-    label: 'authors',
+    href: '/blog',
+    label: 'blog',
   },
   {
     href: '/about',
@@ -28,28 +27,27 @@ export const NAV_LINKS: SocialLink[] = [
 
 export const SOCIAL_LINKS: SocialLink[] = [
   {
-    href: 'https://github.com/jktrn',
+    href: 'https://github.com/Marcel-TO',
     label: 'GitHub',
   },
   {
-    href: 'https://twitter.com/enscry',
-    label: 'Twitter',
+    href: 'https://github.com/Marcel-TO/marcel-to-website',
+    label: 'Repo',
   },
   {
-    href: 'mailto:jason@enscribe.dev',
-    label: 'Email',
+    href: 'https://github.com/sponsors/Marcel-TO',
+    label: 'Sponsor',
   },
   {
-    href: '/rss.xml',
-    label: 'RSS',
+    href: 'https://discord.com/users/765623015219134524',
+    label: 'Discord',
   },
 ]
 
 export const ICON_MAP: IconMap = {
-  Website: 'lucide:globe',
-  GitHub: 'lucide:github',
-  LinkedIn: 'lucide:linkedin',
-  Twitter: 'lucide:twitter',
-  Email: 'lucide:mail',
-  RSS: 'lucide:rss',
+    GitHub: 'lucide:github',
+    Repo: 'lucide:code',
+    Sponsor: 'lucide:heart',
+    Discord: 'discord',
+    Website: 'lucide:globe',
 }

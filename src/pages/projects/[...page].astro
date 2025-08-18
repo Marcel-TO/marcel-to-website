@@ -1,0 +1,60 @@
+---
+import Breadcrumbs from '@/components/Breadcrumbs.astro'
+import PageHead from '@/components/PageHead.astro'
+import ProjectCard from '@/components/ProjectCard.astro'
+import PaginationComponent from '@/components/ui/pagination'
+import { SITE } from '@/consts'
+import Layout from '@/layouts/Layout.astro'
+import { getAllProjects, groupProjectsByYear } from '@/lib/data-utils'
+import type { PaginateFunction } from 'astro'
+
+export async function getStaticPaths({
+  paginate,
+}: {
+  paginate: PaginateFunction
+}) {
+  const allProjects = await getAllProjects()
+  return paginate(allProjects, { pageSize: SITE.postsPerPage })
+}
+
+const { page } = Astro.props
+
+const projectsByYear = groupProjectsByYear(page.data)
+const years = Object.keys(projectsByYear).sort(
+  (a, b) => parseInt(b) - parseInt(a)
+)
+---
+
+<Layout class="max-w-3xl">
+  <PageHead slot="head" title="Projects" />
+  <Breadcrumbs
+    items={[
+      { label: 'Projects', href: '/projects', icon: 'lucide:folder-git-2' },
+      { label: `Page ${page.currentPage}`, icon: 'lucide:git-merge' },
+    ]}
+  />
+
+  <div class="flex min-h-[calc(100vh-18rem)] flex-col gap-y-8">
+    {
+      years.map((year) => (
+        <section class="flex flex-col gap-y-4">
+          <div class="font-medium">{year}</div>
+          <ul class="flex flex-col gap-4">
+            {projectsByYear[year].map((project) => (
+              <li>
+                <ProjectCard project={project} />
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))
+    }
+  </div>
+
+  <PaginationComponent
+    currentPage={page.currentPage}
+    totalPages={page.lastPage}
+    baseUrl="/projects/"
+    client:load
+  />
+</Layout>

@@ -6,7 +6,7 @@ import PostNavigation from '@/components/PostNavigation.astro'
 import SubpostsHeader from '@/components/SubpostsHeader.astro'
 import SubpostsSidebar from '@/components/SubpostsSidebar.astro'
 import TOCHeader from '@/components/TOCHeader.astro'
-import TOCSidebar from '@/components/TOCSidebar.astro'
+import TOCSidebar from '@/components/TOCSidebarBlog.astro'
 import { badgeVariants } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import Layout from '@/layouts/Layout.astro'
@@ -116,6 +116,7 @@ const tocSections = await getTOCSections(currentPostId)
           width={1200}
           height={630}
           class="col-span-full mx-auto w-full max-w-5xl object-cover"
+          transition:name={`blog-transition/${currentPostId}`}
         />
       )
     }
@@ -214,6 +215,7 @@ const tocSections = await getTOCSections(currentPostId)
         newerPost={navigation.newer}
         olderPost={navigation.older}
         parentPost={isCurrentSubpost ? navigation.parent : undefined}
+        path="blog"
       />
     </section>
 
@@ -242,6 +244,7 @@ const tocSections = await getTOCSections(currentPostId)
       newerPost={navigation.newer}
       olderPost={navigation.older}
       parentPost={isCurrentSubpost ? navigation.parent : undefined}
+      path="blog"
     />
   </section>
 

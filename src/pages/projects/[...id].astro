@@ -1,0 +1,281 @@
+---
+import Breadcrumbs from '@/components/Breadcrumbs.astro'
+import Link from '@/components/Link.astro'
+import PostNavigation from '@/components/PostNavigation.astro'
+import ProjectHead from '@/components/ProjectHead.astro'
+import SubprojectsHeader from '@/components/SubprojectsHeader.astro'
+import SubprojectsSidebar from '@/components/SubprojectsSidebar.astro'
+import TOCHeader from '@/components/TOCHeader.astro'
+import TOCSidebarProject from '@/components/TOCSidebarProject.astro'
+import { badgeVariants } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import Layout from '@/layouts/Layout.astro'
+import {
+  getAdjacentProjects,
+  getAllProjectsAndSubProjects,
+  getParentId,
+  getParentProject,
+  getSubprojectCount,
+  getTOCSectionsProjects,
+  hasSubProjects,
+  isSubProject,
+  parseAuthors,
+} from '@/lib/data-utils'
+import { formatDate } from '@/lib/utils'
+import { Icon } from 'astro-icon/components'
+import { Image } from 'astro:assets'
+import { render } from 'astro:content'
+
+export async function getStaticPaths() {
+  const projects = await getAllProjectsAndSubProjects()
+  return projects.map((project) => ({
+    params: { id: project.id },
+    props: project,
+  }))
+}
+
+const project = Astro.props
+const currentProjectId = Astro.params.id
+const { Content, headings } = await render(project)
+const authors = await parseAuthors(project.data.contributors ?? [])
+
+const isCurrentSubproject = isSubProject(currentProjectId)
+const navigation = await getAdjacentProjects(currentProjectId)
+const parentProject = isCurrentSubproject
+  ? await getParentProject(currentProjectId)
+  : null
+
+const hasChildProjects = await hasSubProjects(currentProjectId)
+const subprojectCount = !isCurrentSubproject
+  ? await getSubprojectCount(currentProjectId)
+  : 0
+
+const tocSections = await getTOCSectionsProjects(currentProjectId)
+---
+
+<Layout>
+  <ProjectHead slot="head" project={project} />
+  {
+    (hasChildProjects || isCurrentSubproject) && (
+      <SubprojectsHeader
+        slot="subposts-navigation"
+        parentId={
+          isCurrentSubproject ? getParentId(currentProjectId) : currentProjectId
+        }
+      />
+    )
+  }
+  {
+    headings?.length > 0 &&
+      !(
+        isCurrentSubproject &&
+        headings.length === 1 &&
+        headings[0].text === project.data.title
+      ) && <TOCHeader slot="table-of-contents" headings={headings} />
+  }
+
+  <section
+    class="grid grid-cols-[minmax(0px,1fr)_min(calc(var(--breakpoint-md)-2rem),100%)_minmax(0px,1fr)] gap-y-6"
+  >
+    <div class="col-start-2">
+      <Breadcrumbs
+        items={[
+          { href: '/projects', label: 'Projects', icon: 'lucide:git-merge' },
+          ...(isCurrentSubproject && parentProject
+            ? [
+                {
+                  href: `/projects/${parentProject.id}`,
+                  label: parentProject.data.title,
+                  icon: 'lucide:folder-git-2',
+                },
+                {
+                  href: `/projects/${currentProjectId}`,
+                  label: project.data.title,
+                  icon: 'lucide:git-merge',
+                },
+              ]
+            : [
+                {
+                  href: `/blog/${currentProjectId}`,
+                  label: project.data.title,
+                  icon: 'lucide:git-commit',
+                },
+              ]),
+        ]}
+      />
+    </div>
+
+    {
+      project.data.image && (
+        <Image
+          src={project.data.image}
+          alt={project.data.title}
+          width={1200}
+          height={630}
+          class="col-span-full mx-auto w-full max-w-5xl object-cover"
+          transition:name={`project-transition/${currentProjectId}`}
+        />
+      )
+    }
+
+    <section class="col-start-2 flex flex-col gap-y-6 text-center">
+      <div class="flex flex-col">
+        <h1
+          class="mb-2 scroll-mt-31 text-3xl leading-tight font-medium sm:text-4xl"
+          id="post-title"
+        >
+          {project.data.title}
+        </h1>
+
+        <div
+          class="text-muted-foreground divide-border mb-4 flex flex-col items-center justify-center divide-y text-xs sm:flex-row sm:flex-wrap sm:divide-x sm:divide-y-0 sm:text-sm"
+        >
+          {
+            authors.length > 0 && (
+              <div class="flex w-full items-center justify-center gap-x-2 py-2 sm:w-fit sm:px-2 sm:py-0 first:sm:pl-0 last:sm:pr-0">
+                {authors.map((author) => (
+                  <div class="flex items-center gap-x-1.5">
+                    <Image
+                      src={author.avatar}
+                      alt={author.name}
+                      width={20}
+                      height={20}
+                      class="rounded-full"
+                    />
+                    {author.isRegistered ? (
+                      <Link
+                        href={`/authors/${author.id}`}
+                        underline
+                        class="text-foreground"
+                      >
+                        <span>{author.name}</span>
+                      </Link>
+                    ) : (
+                      <span>{author.name}</span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )
+          }
+
+          <div
+            class="flex w-full items-center justify-center gap-2 py-2 sm:w-fit sm:px-2 sm:py-0 first:sm:pl-0 last:sm:pr-0"
+          >
+            <span
+              >{
+                project.data.startDate && formatDate(project.data.startDate)
+              }</span
+            >
+          </div>
+
+          <div
+            class="flex w-full items-center justify-center gap-2 py-2 sm:w-fit sm:px-2 sm:py-0 first:sm:pl-0 last:sm:pr-0"
+          >
+          </div>
+
+          {
+            subprojectCount > 0 && (
+              <div class="flex w-full items-center justify-center gap-1 py-2 sm:w-fit sm:px-2 sm:py-0 first:sm:pl-0 last:sm:pr-0">
+                <Icon name="lucide:file-text" class="size-3" />
+                {subprojectCount} subproject{subprojectCount === 1 ? '' : 's'}
+              </div>
+            )
+          }
+        </div>
+        <div class="flex flex-wrap justify-center gap-2">
+          {
+            project.data.tags &&
+              project.data.tags.length > 0 &&
+              project.data.tags.map((tag) => (
+                <a
+                  href={`/tags/${tag}`}
+                  class={badgeVariants({ variant: 'outline' })}
+                >
+                  <Icon name="lucide:hash" class="size-3" />
+                  {tag}
+                </a>
+              ))
+          }
+        </div>
+      </div>
+
+      <PostNavigation
+        newerPost={navigation.newer}
+        olderPost={navigation.older}
+        parentPost={isCurrentSubproject ? navigation.parent : undefined}
+        path="projects"
+      />
+    </section>
+
+    {
+      tocSections.length > 0 && (
+        <TOCSidebarProject
+          sections={tocSections}
+          currentProjectId={currentProjectId}
+        />
+      )
+    }
+
+    <article class="prose col-start-2 max-w-none">
+      <Content />
+    </article>
+
+    {
+      (hasChildProjects || isCurrentSubproject) && (
+        <SubprojectsSidebar
+          parentId={
+            isCurrentSubproject
+              ? getParentId(currentProjectId)
+              : currentProjectId
+          }
+          className="w-64"
+        />
+      )
+    }
+
+    <PostNavigation
+      newerPost={navigation.newer}
+      olderPost={navigation.older}
+      parentPost={isCurrentSubproject ? navigation.parent : undefined}
+      path="projects"
+    />
+  </section>
+
+  <Button
+    variant="outline"
+    size="icon"
+    className="group fixed right-8 bottom-8 z-50 hidden"
+    id="scroll-to-top"
+    title="Scroll to top"
+    aria-label="Scroll to top"
+  >
+    <Icon
+      name="lucide:arrow-up"
+      class="mx-auto size-4 transition-all group-hover:-translate-y-0.5"
+    />
+  </Button>
+
+  <script>
+    document.addEventListener('astro:page-load', () => {
+      const scrollToTopButton = document.getElementById('scroll-to-top')
+      const footer = document.querySelector('footer')
+
+      if (scrollToTopButton && footer) {
+        scrollToTopButton.addEventListener('click', () => {
+          window.scrollTo({ top: 0, behavior: 'smooth' })
+        })
+
+        window.addEventListener('scroll', () => {
+          const footerRect = footer.getBoundingClientRect()
+          const isFooterVisible = footerRect.top <= window.innerHeight
+
+          scrollToTopButton.classList.toggle(
+            'hidden',
+            window.scrollY <= 300 || isFooterVisible
+          )
+        })
+      }
+    })
+  </script>
+</Layout>

@@ -5,6 +5,13 @@ export async function getAllAuthors(): Promise<CollectionEntry<'authors'>[]> {
   return await getCollection('authors')
 }
 
+export async function getAuthorById(
+  authorId: string,
+): Promise<CollectionEntry<'authors'> | null> {
+  const allAuthors = await getAllAuthors()
+  return allAuthors.find((author) => author.id === authorId) || null
+}
+
 export async function getAllPosts(): Promise<CollectionEntry<'blog'>[]> {
   const posts = await getCollection('blog')
   return posts
@@ -23,21 +30,43 @@ export async function getAllPostsAndSubposts(): Promise<
 
 export async function getAllProjects(): Promise<CollectionEntry<'projects'>[]> {
   const projects = await getCollection('projects')
-  return projects.sort((a, b) => {
-    const dateA = a.data.startDate?.getTime() || 0
-    const dateB = b.data.startDate?.getTime() || 0
-    return dateB - dateA
-  })
+  return projects
+    .filter((project) => !isSubProject(project.id))
+    .sort(
+      (a, b) =>
+        (b.data.startDate?.valueOf() ?? 0) - (a.data.startDate?.valueOf() ?? 0),
+    )
+}
+
+export async function getAllProjectsAndSubProjects(): Promise<
+  CollectionEntry<'projects'>[]
+> {
+  const projects = await getCollection('projects')
+  return projects.sort(
+    (a, b) =>
+      (b.data.startDate?.valueOf() ?? 0) - (a.data.startDate?.valueOf() ?? 0),
+  )
 }
 
 export async function getAllTags(): Promise<Map<string, number>> {
   const posts = await getAllPosts()
-  return posts.reduce((acc, post) => {
+  const projects = await getAllProjects()
+
+  var postTags = posts.reduce((acc, post) => {
     post.data.tags?.forEach((tag) => {
       acc.set(tag, (acc.get(tag) || 0) + 1)
     })
     return acc
   }, new Map<string, number>())
+
+  var projectTags = projects.reduce((acc, project) => {
+    project.data.tags?.forEach((tag) => {
+      acc.set(tag, (acc.get(tag) || 0) + 1)
+    })
+    return acc
+  }, new Map<string, number>())
+
+  return new Map([...postTags, ...projectTags])
 }
 
 export async function getAdjacentPosts(currentId: string): Promise<{
@@ -99,11 +128,86 @@ export async function getAdjacentPosts(currentId: string): Promise<{
   }
 }
 
+export async function getAdjacentProjects(currentId: string): Promise<{
+  newer: CollectionEntry<'projects'> | null
+  older: CollectionEntry<'projects'> | null
+  parent: CollectionEntry<'projects'> | null
+}> {
+  const allProjects = await getAllProjects()
+
+  if (isSubpost(currentId)) {
+    const parentId = getParentId(currentId)
+    const allProjects = await getAllProjects()
+    const parent =
+      allProjects.find((project) => project.id === parentId) || null
+
+    const projects = await getCollection('projects')
+    const subprojects = projects
+      .filter(
+        (project) =>
+          isSubpost(project.id) && getParentId(project.id) === parentId,
+      )
+      .sort((a, b) => {
+        const dateDiff =
+          (a.data.startDate?.valueOf() ?? 0) -
+          (b.data.startDate?.valueOf() ?? 0)
+        if (dateDiff !== 0) return dateDiff
+
+        const orderA = a.data.order ?? 0
+        const orderB = b.data.order ?? 0
+        return orderA - orderB
+      })
+
+    const currentIndex = subprojects.findIndex(
+      (project) => project.id === currentId,
+    )
+    if (currentIndex === -1) {
+      return { newer: null, older: null, parent }
+    }
+
+    return {
+      newer:
+        currentIndex < subprojects.length - 1
+          ? subprojects[currentIndex + 1]
+          : null,
+      older: currentIndex > 0 ? subprojects[currentIndex - 1] : null,
+      parent,
+    }
+  }
+
+  const parentProjects = allProjects.filter((project) => !isSubpost(project.id))
+  const currentIndex = parentProjects.findIndex(
+    (project) => project.id === currentId,
+  )
+
+  if (currentIndex === -1) {
+    return { newer: null, older: null, parent: null }
+  }
+
+  return {
+    newer: currentIndex > 0 ? parentProjects[currentIndex - 1] : null,
+    older:
+      currentIndex < parentProjects.length - 1
+        ? parentProjects[currentIndex + 1]
+        : null,
+    parent: null,
+  }
+}
+
 export async function getPostsByAuthor(
   authorId: string,
 ): Promise<CollectionEntry<'blog'>[]> {
   const posts = await getAllPosts()
   return posts.filter((post) => post.data.authors?.includes(authorId))
+}
+
+export async function getProjectsByAuthor(
+  authorId: string,
+): Promise<CollectionEntry<'projects'>[]> {
+  const projects = await getAllProjects()
+  return projects.filter((project) =>
+    project.data.contributors?.includes(authorId),
+  )
 }
 
 export async function getPostsByTag(
@@ -113,11 +217,25 @@ export async function getPostsByTag(
   return posts.filter((post) => post.data.tags?.includes(tag))
 }
 
+export async function getProjectsByTag(
+  tag: string,
+): Promise<CollectionEntry<'projects'>[]> {
+  const projects = await getAllProjects()
+  return projects.filter((project) => project.data.tags?.includes(tag))
+}
+
 export async function getRecentPosts(
   count: number,
 ): Promise<CollectionEntry<'blog'>[]> {
   const posts = await getAllPosts()
   return posts.slice(0, count)
+}
+
+export async function getRecentProjects(
+  count: number,
+): Promise<CollectionEntry<'projects'>[]> {
+  const projects = await getAllProjects()
+  return projects.slice(0, count)
 }
 
 export async function getSortedTags(): Promise<
@@ -157,6 +275,26 @@ export async function getSubpostsForParent(
     })
 }
 
+export async function getSubProjectsForParent(
+  parentId: string,
+): Promise<CollectionEntry<'projects'>[]> {
+  const projects = await getCollection('projects')
+  return projects
+    .filter(
+      (project) =>
+        isSubpost(project.id) && getParentId(project.id) === parentId,
+    )
+    .sort((a, b) => {
+      const dateDiff =
+        (a.data.startDate?.valueOf() ?? 0) - (b.data.startDate?.valueOf() ?? 0)
+      if (dateDiff !== 0) return dateDiff
+
+      const orderA = a.data.order ?? 0
+      const orderB = b.data.order ?? 0
+      return orderA - orderB
+    })
+}
+
 export function groupPostsByYear(
   posts: CollectionEntry<'blog'>[],
 ): Record<string, CollectionEntry<'blog'>[]> {
@@ -170,13 +308,35 @@ export function groupPostsByYear(
   )
 }
 
+export function groupProjectsByYear(
+  posts: CollectionEntry<'projects'>[],
+): Record<string, CollectionEntry<'projects'>[]> {
+  return posts.reduce(
+    (acc: Record<string, CollectionEntry<'projects'>[]>, post) => {
+      const year = post.data.startDate?.getFullYear().toString() ?? 'undefined'
+      ;(acc[year] ??= []).push(post)
+      return acc
+    },
+    {},
+  )
+}
+
 export async function hasSubposts(postId: string): Promise<boolean> {
   const subposts = await getSubpostsForParent(postId)
   return subposts.length > 0
 }
 
+export async function hasSubProjects(projectId: string): Promise<boolean> {
+  const subprojects = await getSubProjectsForParent(projectId)
+  return subprojects.length > 0
+}
+
 export function isSubpost(postId: string): boolean {
   return postId.includes('/')
+}
+
+export function isSubProject(projectId: string): boolean {
+  return projectId.includes('/')
 }
 
 export async function getParentPost(
@@ -189,6 +349,18 @@ export async function getParentPost(
   const parentId = getParentId(subpostId)
   const allPosts = await getAllPosts()
   return allPosts.find((post) => post.id === parentId) || null
+}
+
+export async function getParentProject(
+  subprojectId: string,
+): Promise<CollectionEntry<'projects'> | null> {
+  if (!isSubProject(subprojectId)) {
+    return null
+  }
+
+  const parentId = getParentId(subprojectId)
+  const allProjects = await getAllProjects()
+  return allProjects.find((project) => project.id === parentId) || null
 }
 
 export async function parseAuthors(authorIds: string[] = []) {
@@ -208,6 +380,21 @@ export async function parseAuthors(authorIds: string[] = []) {
   })
 }
 
+export async function parseAuthorsAndGetCollection(authorIds: string[] = []) {
+  if (!authorIds.length) return []
+
+  const allAuthors = await getAllAuthors()
+  const authorMap = new Map(allAuthors.map((author) => [author.id, author]))
+
+  return authorIds.map((id) => {
+    const author = authorMap.get(id)
+    return {
+      id,
+      author: author,
+    }
+  })
+}
+
 export async function getPostById(
   postId: string,
 ): Promise<CollectionEntry<'blog'> | null> {
@@ -215,9 +402,35 @@ export async function getPostById(
   return allPosts.find((post) => post.id === postId) || null
 }
 
+export async function getPostsById(
+  postIds: string[],
+): Promise<CollectionEntry<'blog'>[]> {
+  const allPosts = await getAllPostsAndSubposts()
+  return allPosts.filter((post) => postIds.includes(post.id))
+}
+
+export async function getProjectById(
+  projectId: string,
+): Promise<CollectionEntry<'projects'> | null> {
+  const allProjects = await getAllProjectsAndSubProjects()
+  return allProjects.find((project) => project.id === projectId) || null
+}
+
+export async function getProjectsById(
+  projectIds: string[],
+): Promise<CollectionEntry<'projects'>[]> {
+  const allProjects = await getAllProjectsAndSubProjects()
+  return allProjects.filter((project) => projectIds.includes(project.id))
+}
+
 export async function getSubpostCount(parentId: string): Promise<number> {
   const subposts = await getSubpostsForParent(parentId)
   return subposts.length
+}
+
+export async function getSubprojectCount(parentId: string): Promise<number> {
+  const subprojects = await getSubProjectsForParent(parentId)
+  return subprojects.length
 }
 
 export async function getCombinedReadingTime(postId: string): Promise<string> {
@@ -283,6 +496,55 @@ export async function getTOCSections(postId: string): Promise<TOCSection[]> {
   }
 
   const subposts = await getSubpostsForParent(parentId)
+  for (const subpost of subposts) {
+    const { headings: subpostHeadings } = await render(subpost)
+    if (subpostHeadings.length > 0) {
+      sections.push({
+        type: 'subpost',
+        title: subpost.data.title,
+        headings: subpostHeadings.map((heading, index) => ({
+          slug: heading.slug,
+          text: heading.text,
+          depth: heading.depth,
+          isSubpostTitle: index === 0,
+        })),
+        subpostId: subpost.id,
+      })
+    }
+  }
+
+  return sections
+}
+
+export async function getTOCSectionsProjects(
+  projectId: string,
+): Promise<TOCSection[]> {
+  const post = await getProjectById(projectId)
+  if (!post) return []
+
+  const parentId = isSubProject(projectId) ? getParentId(projectId) : projectId
+  const parentPost = isSubProject(projectId)
+    ? await getProjectById(parentId)
+    : post
+
+  if (!parentPost) return []
+
+  const sections: TOCSection[] = []
+
+  const { headings: parentHeadings } = await render(parentPost)
+  if (parentHeadings.length > 0) {
+    sections.push({
+      type: 'parent',
+      title: 'Overview',
+      headings: parentHeadings.map((heading) => ({
+        slug: heading.slug,
+        text: heading.text,
+        depth: heading.depth,
+      })),
+    })
+  }
+
+  const subposts = await getSubProjectsForParent(parentId)
   for (const subpost of subposts) {
     const { headings: subpostHeadings } = await render(subpost)
     if (subpostHeadings.length > 0) {

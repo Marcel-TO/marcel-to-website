@@ -2,8 +2,9 @@
 import BlogCard from '@/components/BlogCard.astro'
 import Breadcrumbs from '@/components/Breadcrumbs.astro'
 import PageHead from '@/components/PageHead.astro'
+import ProjectCard from '@/components/ProjectCard.astro'
 import Layout from '@/layouts/Layout.astro'
-import { getAllTags, getPostsByTag } from '@/lib/data-utils'
+import { getAllTags, getPostsByTag, getProjectsByTag } from '@/lib/data-utils'
 
 export async function getStaticPaths() {
   const tagMap = await getAllTags()
@@ -12,25 +13,27 @@ export async function getStaticPaths() {
   return Promise.all(
     uniqueTags.map(async (tag) => {
       const posts = await getPostsByTag(tag)
+      const projects = await getProjectsByTag(tag)
       return {
         params: { id: tag },
         props: {
           tag,
+          projects,
           posts,
         },
       }
-    }),
+    })
   )
 }
 
-const { tag, posts } = Astro.props
+const { tag, posts, projects } = Astro.props
 ---
 
 <Layout class="max-w-3xl">
   <PageHead
     slot="head"
-    title={`Posts tagged with "${tag}"`}
-    description={`A collection of posts tagged with ${tag}.`}
+    title={`Posts and Projects tagged with "${tag}"`}
+    description={`A collection of posts and projects tagged with ${tag}.`}
     noindex
   />
   <Breadcrumbs
@@ -39,14 +42,37 @@ const { tag, posts } = Astro.props
       { label: tag, icon: 'lucide:tag' },
     ]}
   />
-
+  <h2 class="mt-8 text-xl font-bold">Related Projects</h2>
   <ul class="flex flex-col gap-y-4">
     {
-      posts.map((post) => (
-        <li>
-          <BlogCard entry={post} />
+      projects.length === 0 ? (
+        <li class="text-muted-foreground italic">
+          No projects found for this tag.
         </li>
-      ))
+      ) : (
+        projects.map((project) => (
+          <li>
+            <ProjectCard project={project} />
+          </li>
+        ))
+      )
+    }
+  </ul>
+
+  <h2 class="mt-8 text-xl font-bold">Related Posts</h2>
+  <ul class="flex flex-col gap-y-4">
+    {
+      posts.length === 0 ? (
+        <li class="text-muted-foreground italic">
+          No posts found for this tag.
+        </li>
+      ) : (
+        posts.map((post) => (
+          <li>
+            <BlogCard entry={post} />
+          </li>
+        ))
+      )
     }
   </ul>
 </Layout>

@@ -8,7 +8,7 @@ import { Icon } from 'astro-icon/components'
   variant="ghost"
   size="icon"
   title="Toggle theme"
-  className="-me-2 size-8"
+  className="-me-2 size-8 cursor-pointer"
 >
   <Icon
     name="lucide:sun"
@@ -21,7 +21,7 @@ import { Icon } from 'astro-icon/components'
   <span class="sr-only">Toggle theme</span>
 </Button>
 
-<script is:inline data-astro-rerun>
+<script is:inline>
   const theme = (() => {
     const localStorageTheme = localStorage?.getItem('theme') ?? ''
     if (['dark', 'light'].includes(localStorageTheme)) {
@@ -35,7 +35,7 @@ import { Icon } from 'astro-icon/components'
 
   document.documentElement.setAttribute('data-theme', theme)
   document.documentElement.classList.add(
-    theme === 'dark' ? 'scheme-dark' : 'scheme-light',
+    theme === 'dark' ? 'scheme-dark' : 'scheme-light'
   )
   window.localStorage.setItem('theme', theme)
 </script>
@@ -80,7 +80,7 @@ import { Icon } from 'astro-icon/components'
     element.setAttribute('data-theme', storedTheme)
     element.classList.remove('scheme-dark', 'scheme-light')
     element.classList.add(
-      storedTheme === 'dark' ? 'scheme-dark' : 'scheme-light',
+      storedTheme === 'dark' ? 'scheme-dark' : 'scheme-light'
     )
 
     requestAnimationFrame(() => {

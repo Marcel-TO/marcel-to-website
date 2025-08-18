@@ -131,7 +131,7 @@ const capitalize = (str: string) => str.charAt(0).toUpperCase() + str.slice(1)
 const calloutVariants = cva('relative px-4 py-3 my-6 border-l-4 text-sm', {
   variants: {
     variant: Object.fromEntries(
-      Object.entries(calloutConfig).map(([key, config]) => [key, config.style]),
+      Object.entries(calloutConfig).map(([key, config]) => [key, config.style])
     ),
   },
   defaultVariants: {
@@ -153,7 +153,7 @@ const { title, variant = 'note', defaultOpen = true, ...rest } = Astro.props
   class={cn(
     calloutVariants({ variant }),
     rest.class,
-    '[&[open]>summary_svg:last-child]:rotate-180 [&[open]>summary]:mb-3',
+    '[&[open]>summary_svg:last-child]:rotate-180 [&[open]>summary]:mb-3'
   )}
   {...rest}
   open={defaultOpen}
@@ -173,7 +173,7 @@ const { title, variant = 'note', defaultOpen = true, ...rest } = Astro.props
       name="lucide:chevron-down"
       class={cn(
         'ml-auto h-4 w-4 shrink-0 transition-transform duration-200',
-        calloutConfig[variant].textColor,
+        calloutConfig[variant].textColor
       )}
     />
   </summary>

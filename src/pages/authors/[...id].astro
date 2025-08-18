@@ -3,8 +3,13 @@ import AuthorCard from '@/components/AuthorCard.astro'
 import BlogCard from '@/components/BlogCard.astro'
 import Breadcrumbs from '@/components/Breadcrumbs.astro'
 import PageHead from '@/components/PageHead.astro'
+import ProjectCard from '@/components/ProjectCard.astro'
 import Layout from '@/layouts/Layout.astro'
-import { getAllAuthors, getPostsByAuthor } from '@/lib/data-utils'
+import {
+  getAllAuthors,
+  getPostsByAuthor,
+  getProjectsByAuthor,
+} from '@/lib/data-utils'
 
 export async function getStaticPaths() {
   const authors = await getAllAuthors()
@@ -16,6 +21,7 @@ export async function getStaticPaths() {
 
 const { author } = Astro.props
 const authorPosts = await getPostsByAuthor(author.id)
+const authorProjects = await getProjectsByAuthor(author.id)
 ---
 
 <Layout class="max-w-3xl">
@@ -35,6 +41,26 @@ const authorPosts = await getPostsByAuthor(author.id)
   <section>
     <AuthorCard author={author} />
   </section>
+
+  <section class="flex flex-col gap-y-4">
+    <h2 class="text-2xl font-medium">Projects by {author.data.name}</h2>
+    {
+      authorProjects.length > 0 ? (
+        <ul class="flex flex-col gap-4">
+          {authorProjects.map((project) => (
+            <li>
+              <ProjectCard project={project} />
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p class="text-muted-foreground">
+          No posts available from this author.
+        </p>
+      )
+    }
+  </section>
+
   <section class="flex flex-col gap-y-4">
     <h2 class="text-2xl font-medium">Posts by {author.data.name}</h2>
     {

@@ -6,6 +6,7 @@ import { buttonVariants } from '@/components/ui/button'
 import { SITE } from '@/consts'
 import Layout from '@/layouts/Layout.astro'
 import { getRecentPosts } from '@/lib/data-utils'
+import { Icon } from 'astro-icon/components'
 
 const blog = await getRecentPosts(SITE.featuredPostCount)
 ---
@@ -13,50 +14,46 @@ const blog = await getRecentPosts(SITE.featuredPostCount)
 <Layout class="max-w-3xl">
   <PageHead slot="head" title="Home" />
   <section>
-    <div class="rounded-lg border">
+    <div class="bg-primary/10 rounded-lg border backdrop-blur-2xl">
       <div class="flex flex-col space-y-1.5 p-6">
-        <h3 class="text-3xl leading-none font-medium">er·u·dite</h3>
+        <h3 class="text-3xl leading-none font-medium">Marcel-TO</h3>
         <p class="text-muted-foreground text-sm">
-          /ˈer(y)əˌdīt/ &bull; <span class="font-medium">adjective</span>
+          <div class="flex flex-row items-center gap-1">
+            <Icon
+              name="lucide:file-chart-pie"
+              class="text-primary-foreground size-4"
+            /> Data Engineer
+            <Icon
+              name="lucide:code"
+              class="text-primary-foreground ml-4 size-4"
+            /> Programmer
+            <Icon
+              name="lucide:gamepad-2"
+              class="text-primary-foreground ml-4 size-4"
+            /> Gamer <Icon
+              name="lucide:guitar"
+              class="text-primary-foreground ml-4 size-4"
+            /> Musician
+          </div>
         </p>
       </div>
       <div class="p-6 pt-0">
-        <p class="text-muted-foreground mb-2 text-sm">
-          astro-erudite is an opinionated, unstyled static blogging template
-          built with <Link
-            href="https://astro.build"
-            class="text-foreground"
-            external
-            underline>Astro</Link
-          >, <Link
-            href="https://tailwindcss.com"
-            class="text-foreground"
-            external
-            underline>Tailwind</Link
-          >, and <Link
-            href="https://ui.shadcn.com"
-            class="text-foreground"
-            external
-            underline>shadcn/ui</Link
-          >. Extraordinarily loosely based on the <Link
-            href="https://astro-micro.vercel.app/"
-            class="text-foreground"
-            external
-            underline>Astro Micro</Link
-          > theme.
+        <p class="text-primary-foreground mb-2 text-sm my-2">
+          Welcome to my personal website! Here you can find projects I've worked
+          on, blog posts I've written, documentation about my Open Source
+          projects, and more about my interests and hobbies.
         </p>
-        <p class="text-muted-foreground text-sm">
-          To use this template, check out the <Link
-            href="https://github.com/jktrn/astro-erudite"
-            class="text-foreground"
-            underline
-            external>GitHub</Link
-          > repository. To learn more about why this template exists, read this blog
-          post: <Link
-            href="/blog/the-state-of-static-blogs"
-            class="text-foreground"
-            underline>The State of Static Blogs in 2024</Link
-          >.
+        <p class="text-primary-foreground text-sm my-2">
+          I'm always looking for new challenges and opportunities to learn and
+          grow.
+        </p>
+        <p class="text-primary-foreground text-sm my-2">
+          When I'm not coding, you can find me in front of the piano or enjoying
+          games (from chess to mostly all trendy video games).
+        </p>
+        <p class="text-primary-foreground text-sm mt-6">
+          Feel free to browse my repositories and reach out to me if you have
+          any questions or would like to collaborate on a project.
         </p>
       </div>
     </div>

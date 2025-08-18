@@ -1,0 +1,80 @@
+---
+title: 'Prerequisites for Programming'
+description: 'What are the prerequisites to make changes to the editor yourself'
+tags: ['Tauri', 'Rust', 'Save Editor']
+contributors: ['me']
+order: 4
+---
+
+import Callout from '@/components/Callout.astro'
+
+## Installations
+
+- Rust:
+
+  Installation: Before working with TAURI, ensure that Rust is installed on your system. You can install Rust by following the instructions on the official [Rust website](https://www.rust-lang.org/tools/install).
+
+- Node.js and npm (Node Package Manager):
+
+  Installation: TAURI projects typically require Node.js and npm for managing frontend dependencies and building the project. Install Node.js [here](https://nodejs.org/)
+
+- TAURI CLI:
+
+  Installation: The TAURI Command Line Interface (CLI) is essential for creating, building, and managing TAURI projects. Install it globally using npm:
+
+  ```bash
+    npm install -g @tauri-apps/cli
+  ```
+
+## To run application
+
+After all prerequisites are fulfilled it is possible to start the application with the following command:
+
+```bash
+  npm run tauri dev
+```
+
+# To build application
+
+If you made changes and want to create an executable it is possible by using the following command:
+
+```bash
+  npm run tauri build
+```
+
+## Change Tauri Settings
+
+The application contains a settings file the base information for the executable are stored. The file is called `tauri.conf.json` and is found inside the `src-tauri` directory of the editor code (Click [here](https://github.com/Marcel-TO/DL2_Save_Editor/blob/main/savegame-editor/src-tauri/tauri.conf.json) if you want to browse the file).
+
+<Callout title="Tauri Settings Example" variant="example">
+For example, if you would like to change the default setting of the fullscreen mode, the size of the window or the title, you just have to change the following parameters inside the config file to your desired values:
+
+```diff lang="json" collapse={1-7} {12-19}
+{
+    ...
+  "productName": "Dying Light 2 Save Editor",
+  "mainBinaryName": "Dying Light 2 Save Editor",
+  "version": "1.0.8",
+  "identifier": "com.dyinglight.save.editor",
+  "plugins": {},
+  "app": {
+    "withGlobalTauri": false,
+    "windows": [
+      {
+-        "fullscreen": false,
++        "fullscreen": true,
+        "resizable": true,
+        "maximized": true,
+        "title": "Dying Light 2 Save Editor",
+        "width": 1080,
+        "height": 800,
+        "useHttpsScheme": true
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  }
+}
+```
+</Callout>

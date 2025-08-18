@@ -35,7 +35,7 @@ const subpostsWithReadingTime = await Promise.all(
   subposts.map(async (subpost) => ({
     ...subpost,
     readingTime: await getPostReadingTime(subpost.id),
-  })),
+  }))
 )
 ---
 
@@ -152,7 +152,7 @@ const subpostsWithReadingTime = await Promise.all(
                       </span>
                     </div>
                   </Link>
-                ),
+                )
               )}
             </li>
           )
@@ -194,7 +194,7 @@ const subpostsWithReadingTime = await Promise.all(
       if (!state.scrollArea) return
 
       const activeItem = state.scrollArea.querySelector(
-        '.subposts-sidebar-active-item',
+        '.subposts-sidebar-active-item'
       )
       if (!activeItem) {
         return
@@ -210,8 +210,8 @@ const subpostsWithReadingTime = await Promise.all(
         0,
         Math.min(
           currentItemTop - (areaHeight - itemHeight) / 2,
-          state.scrollArea.scrollHeight - state.scrollArea.clientHeight,
-        ),
+          state.scrollArea.scrollHeight - state.scrollArea.clientHeight
+        )
       )
 
       state.scrollArea.scrollTop = targetScroll
@@ -223,21 +223,21 @@ const subpostsWithReadingTime = await Promise.all(
       state.reset()
 
       const sidebarContainer = document.getElementById(
-        'subposts-sidebar-container',
+        'subposts-sidebar-container'
       )
       if (sidebarContainer) {
         state.scrollArea = sidebarContainer.querySelector(
-          '[data-radix-scroll-area-viewport]',
+          '[data-radix-scroll-area-viewport]'
         )
         state.sidebarScrollArea = sidebarContainer.querySelector(
-          '[data-subposts-sidebar-scroll]',
+          '[data-subposts-sidebar-scroll]'
         )
 
         if (state.scrollArea) {
           state.scrollArea.addEventListener(
             'scroll',
             SidebarScrollMask.update,
-            { passive: true },
+            { passive: true }
           )
         }
 
@@ -262,6 +262,6 @@ const subpostsWithReadingTime = await Promise.all(
     SidebarController.init()
   })
   document.addEventListener('astro:before-swap', () =>
-    SidebarController.cleanup(),
+    SidebarController.cleanup()
   )
 </script>

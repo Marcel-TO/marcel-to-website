@@ -1,17 +1,19 @@
 ---
 import { ScrollArea } from '@/components/ui/scroll-area'
 import type { TOCSection } from '@/lib/data-utils'
-import { getParentId, isSubpost } from '@/lib/data-utils'
+import { getParentId, isSubProject } from '@/lib/data-utils'
 import { cn, getHeadingMargin } from '@/lib/utils'
 
 type Props = {
   sections: TOCSection[]
-  currentPostId: string
+  currentProjectId: string
 }
 
-const { sections, currentPostId } = Astro.props
-const isCurrentSubpost = isSubpost(currentPostId)
-const parentId = isCurrentSubpost ? getParentId(currentPostId) : currentPostId
+const { sections, currentProjectId } = Astro.props
+const isCurrentSubproject = isSubProject(currentProjectId)
+const parentId = isCurrentSubproject
+  ? getParentId(currentProjectId)
+  : currentProjectId
 ---
 
 {
@@ -29,13 +31,13 @@ const parentId = isCurrentSubpost ? getParentId(currentPostId) : currentPostId
         <div class="flex flex-col gap-2 px-4">
           <span class="text-lg font-medium">Table of Contents</span>
           {sections.map((section, index) => {
-            const isFirstSubpost =
+            const isFirstSubProject =
               section.type === 'subpost' &&
               (index === 0 || sections[index - 1].type === 'parent')
 
             return (
               <>
-                {isFirstSubpost && (
+                {isFirstSubProject && (
                   <div class="mt-2 flex items-center gap-2">
                     <div class="bg-border h-px flex-1" />
                     <span class="text-muted-foreground text-xs font-medium">
@@ -52,15 +54,15 @@ const parentId = isCurrentSubpost ? getParentId(currentPostId) : currentPostId
                         class={cn(
                           'text-sm',
                           getHeadingMargin(heading.depth),
-                          isCurrentSubpost
+                          isCurrentSubproject
                             ? 'text-foreground/40'
-                            : 'text-foreground/60',
+                            : 'text-foreground/60'
                         )}
                       >
                         <a
                           href={
-                            isCurrentSubpost
-                              ? `/blog/${parentId}#${heading.slug}`
+                            isCurrentSubproject
+                              ? `/projects/${parentId}#${heading.slug}`
                               : `#${heading.slug}`
                           }
                           class="marker:text-foreground/30 list-none underline decoration-transparent underline-offset-[3px] transition-colors duration-200 hover:decoration-inherit"
@@ -75,27 +77,29 @@ const parentId = isCurrentSubpost ? getParentId(currentPostId) : currentPostId
                   <div
                     class={cn(
                       'border p-2',
-                      section.subpostId === currentPostId ? 'bg-muted/50' : '',
+                      section.subpostId === currentProjectId
+                        ? 'bg-muted/50'
+                        : ''
                     )}
                   >
                     <ul class="flex list-none flex-col gap-y-2">
                       <li
                         class={cn(
                           'text-xs font-medium',
-                          section.subpostId === currentPostId
+                          section.subpostId === currentProjectId
                             ? 'text-foreground'
-                            : 'text-foreground/60',
+                            : 'text-foreground/60'
                         )}
                       >
                         <a
                           href={
-                            section.subpostId === currentPostId
+                            section.subpostId === currentProjectId
                               ? '#'
-                              : `/blog/${section.subpostId}`
+                              : `/projects/${section.subpostId}`
                           }
                           class="marker:text-foreground/30 list-none underline decoration-transparent underline-offset-[3px] transition-colors duration-200 hover:decoration-inherit"
                           data-heading-link={
-                            section.subpostId === currentPostId
+                            section.subpostId === currentProjectId
                               ? 'top'
                               : `${section.subpostId}-top`
                           }
@@ -108,20 +112,20 @@ const parentId = isCurrentSubpost ? getParentId(currentPostId) : currentPostId
                           class={cn(
                             'text-xs',
                             getHeadingMargin(heading.depth),
-                            section.subpostId === currentPostId
+                            section.subpostId === currentProjectId
                               ? 'text-foreground/60'
-                              : 'text-foreground/30',
+                              : 'text-foreground/30'
                           )}
                         >
                           <a
                             href={
-                              section.subpostId === currentPostId
+                              section.subpostId === currentProjectId
                                 ? `#${heading.slug}`
-                                : `/blog/${section.subpostId}#${heading.slug}`
+                                : `/projects/${section.subpostId}#${heading.slug}`
                             }
                             class="marker:text-foreground/30 hover:text-foreground/60 list-none underline decoration-transparent underline-offset-[3px] transition-colors duration-200 hover:decoration-inherit"
                             data-heading-link={
-                              section.subpostId === currentPostId
+                              section.subpostId === currentProjectId
                                 ? heading.slug
                                 : `${section.subpostId}-${heading.slug}`
                             }
@@ -147,7 +151,7 @@ const parentId = isCurrentSubpost ? getParentId(currentPostId) : currentPostId
 
   class TOCState {
     links: NodeListOf<Element> = document.querySelectorAll(
-      '[data-heading-link]',
+      '[data-heading-link]'
     )
     activeIds: string[] = []
     headings: HTMLElement[] = []
@@ -157,7 +161,7 @@ const parentId = isCurrentSubpost ? getParentId(currentPostId) : currentPostId
 
     reset() {
       this.links = document.querySelectorAll(
-        '#toc-sidebar-container [data-heading-link]',
+        '#toc-sidebar-container [data-heading-link]'
       )
       this.activeIds = []
       this.headings = []
@@ -176,8 +180,8 @@ const parentId = isCurrentSubpost ? getParentId(currentPostId) : currentPostId
     static build() {
       state.headings = Array.from(
         document.querySelectorAll<HTMLElement>(
-          '.prose h2, .prose h3, .prose h4, .prose h5, .prose h6',
-        ),
+          '.prose h2, .prose h3, .prose h4, .prose h5, .prose h6'
+        )
       )
 
       if (state.headings.length === 0) {
@@ -256,7 +260,7 @@ const parentId = isCurrentSubpost ? getParentId(currentPostId) : currentPostId
       headingIds.forEach((id) => {
         if (id) {
           const activeLink = document.querySelector(
-            `#toc-sidebar-container [data-heading-link="${id}"]`,
+            `#toc-sidebar-container [data-heading-link="${id}"]`
           )
           if (activeLink) {
             activeLink.classList.add('text-foreground')
@@ -271,7 +275,7 @@ const parentId = isCurrentSubpost ? getParentId(currentPostId) : currentPostId
       if (!state.scrollArea || !headingIds.length) return
 
       const activeLink = document.querySelector(
-        `#toc-sidebar-container [data-heading-link="${headingIds[0]}"]`,
+        `#toc-sidebar-container [data-heading-link="${headingIds[0]}"]`
       )
       if (!activeLink) return
 
@@ -285,8 +289,8 @@ const parentId = isCurrentSubpost ? getParentId(currentPostId) : currentPostId
         0,
         Math.min(
           currentLinkTop - (areaHeight - linkHeight) / 2,
-          state.scrollArea.scrollHeight - state.scrollArea.clientHeight,
-        ),
+          state.scrollArea.scrollHeight - state.scrollArea.clientHeight
+        )
       )
 
       if (Math.abs(targetScroll - state.scrollArea.scrollTop) > 5) {
@@ -337,7 +341,7 @@ const parentId = isCurrentSubpost ? getParentId(currentPostId) : currentPostId
       state.scrollArea?.addEventListener(
         'scroll',
         this.handleTOCScroll,
-        options,
+        options
       )
     }
 

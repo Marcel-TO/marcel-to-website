@@ -7,6 +7,7 @@ import Head from '@/components/Head.astro'
 import Header from '@/components/Header.astro'
 import { SITE } from '@/consts'
 import { cn } from '@/lib/utils'
+import { ClientRouter } from "astro:transitions";
 
 interface Props {
   class?: string
@@ -16,14 +17,15 @@ const { class: className } = Astro.props
 ---
 
 <!doctype html>
-<html class="bg-background text-foreground" lang={SITE.locale}>
+<html class="bg-radial from-background-gradient to-background text-foreground" lang={SITE.locale}>
   <Head>
     <slot name="head" />
+    <ClientRouter />
   </Head>
   <body>
     <div class="flex h-fit min-h-screen flex-col gap-y-6 font-sans">
       <div
-        class="bg-background/50 sticky top-0 z-50 divide-y backdrop-blur-sm xl:divide-none"
+        class="sticky top-0 z-50 divide-y backdrop-blur-sm xl:divide-none"
       >
         <Header />
         <slot name="subposts-navigation" />

@@ -1,50 +1,68 @@
 ---
 import Link from '@/components/Link.astro'
 import { Badge } from '@/components/ui/badge'
+import { parseAuthors } from '@/lib/data-utils'
 import { formatDate } from '@/lib/utils'
 import { Icon } from 'astro-icon/components'
 import { Image } from 'astro:assets'
 import type { CollectionEntry } from 'astro:content'
-
+import AvatarComponent from './ui/avatar'
 interface Props {
   project: CollectionEntry<'projects'>
 }
 
 const { project } = Astro.props
+const contributors = await parseAuthors(project.data.contributors ?? [])
 ---
 
 <div
-  class="hover:bg-secondary/50 rounded-xl border p-4 transition-colors duration-300 ease-in-out"
+  class="rounded-xl border p-4 grayscale-75 backdrop-blur-2xl transition-all duration-200 ease-in-out hover:scale-101 hover:shadow-md hover:grayscale-0"
 >
   <Link
-    href={project.data.link}
+    href={`/${project.collection}/${project.id}`}
     class="flex flex-col gap-4 sm:flex-row"
-    external
   >
     {
       project.data.image && (
         <div class="max-w-3xs sm:shrink-0">
           <Image
             src={project.data.image}
-            alt={project.data.name}
+            alt={project.data.title}
             width={1200}
             height={630}
             class="object-cover"
+            transition:name={`project-transition/${project.id}`}
           />
         </div>
       )
     }
     <div class="grow">
       <h3 class="mb-1 text-lg font-medium">
-        {project.data.name}
+        {project.data.title}
       </h3>
       <p class="text-muted-foreground mb-2 text-sm">
         {project.data.description}
       </p>
       {
         project.data.startDate && (
-          <p class="text-muted-foreground/70 mb-2 flex items-center gap-x-1.5 text-xs">
-            <span class="flex items-center gap-x-1.5">
+          <p class="text-muted-foreground/70 flex items-center gap-x-1.5 text-xs">
+            {contributors.length > 0 && (
+              <>
+                {contributors.map((contributor) => (
+                  <div class="flex items-center gap-x-1.5">
+                    <AvatarComponent
+                      client:load
+                      src={contributor.avatar}
+                      alt={contributor.name}
+                      fallback={contributor.name[0]}
+                      className="size-5 rounded-full"
+                    />
+                    <span>{contributor.name}</span>
+                  </div>
+                ))}
+              </>
+            )}
+            <span class="my-2 flex items-center gap-x-1.5">
               <Icon name="lucide:calendar" class="size-3" />
               <span>
                 {formatDate(project.data.startDate)}
@@ -60,7 +78,7 @@ const { project } = Astro.props
         project.data.tags && (
           <div class="flex flex-wrap gap-2">
             {project.data.tags.map((tag: string) => (
-              <Badge variant="secondary">{tag}</Badge>
+              <Badge variant="outline">{tag}</Badge>
             ))}
           </div>
         )

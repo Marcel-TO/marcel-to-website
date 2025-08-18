@@ -1,0 +1,272 @@
+---
+import { ScrollArea } from '@/components/ui/scroll-area'
+import {
+  getParentId,
+  getParentProject,
+  getProjectById,
+  getSubProjectsForParent,
+  isSubProject,
+} from '@/lib/data-utils'
+import { Icon } from 'astro-icon/components'
+
+const { parentId } = Astro.props
+const currentProjectId = Astro.params.id as string
+const isCurrentSubproject = isSubProject(currentProjectId)
+const rootParentId = isCurrentSubproject
+  ? getParentId(currentProjectId)
+  : parentId
+
+const currentProject = !isCurrentSubproject
+  ? await getProjectById(currentProjectId)
+  : null
+const subprojects = await getSubProjectsForParent(rootParentId)
+const parentProject = isCurrentSubproject
+  ? await getParentProject(currentProjectId)
+  : null
+
+const activeProject = parentProject || currentProject
+const isActiveProject = activeProject?.id === currentProjectId
+
+const currentSubprojectDetails = activeProject
+---
+
+{
+  activeProject && subprojects.length > 0 && (
+    <div id="mobile-subposts-container" class="w-full xl:hidden">
+      <details class="group">
+        <summary class="flex w-full cursor-pointer items-center justify-between">
+          <div class="mx-auto flex w-full max-w-3xl items-center px-4 py-3">
+            <div class="relative mr-2 size-4">
+              <Icon
+                name={
+                  currentSubprojectDetails
+                    ? 'lucide:file-text'
+                    : isActiveProject
+                      ? 'lucide:book-open-text'
+                      : 'lucide:book-open'
+                }
+                class="size-4 flex-shrink-0"
+                aria-hidden="true"
+              />
+            </div>
+            <div class="flex flex-grow flex-col truncate text-sm">
+              <span class="text-muted-foreground truncate">
+                {activeProject.data.title}
+              </span>
+            </div>
+            <span class="text-muted-foreground ml-2">
+              <Icon
+                name="lucide:chevron-down"
+                class="h-4 w-4 transition-transform duration-200 group-open:rotate-180"
+              />
+            </span>
+          </div>
+        </summary>
+
+        <ScrollArea
+          client:load
+          className="mx-auto max-w-3xl"
+          data-subposts-header-scroll
+        >
+          <div class="max-h-[30vh]">
+            <ul class="flex list-none flex-col gap-y-1 px-4 pb-4">
+              {activeProject && (
+                <li>
+                  {isActiveProject ? (
+                    <div class="text-foreground bg-muted mobile-subposts-active-item flex items-center gap-2 rounded-md px-2 py-1.5 text-sm font-medium">
+                      <Icon
+                        name="lucide:book-open-text"
+                        class="size-4 flex-shrink-0"
+                        aria-hidden="true"
+                      />
+                      <div class="flex flex-col">
+                        <span class="line-clamp-2">
+                          {activeProject.data.title}
+                        </span>
+                      </div>
+                    </div>
+                  ) : (
+                    <a
+                      href={`/projects/${activeProject.id}`}
+                      class="mobile-subposts-link hover:text-foreground text-muted-foreground hover:bg-muted/50 flex items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors"
+                    >
+                      <Icon
+                        name="lucide:book-open"
+                        class="size-4 flex-shrink-0"
+                        aria-hidden="true"
+                      />
+                      <div class="flex flex-col">
+                        <span class="line-clamp-2">
+                          {activeProject.data.title}
+                        </span>
+                      </div>
+                    </a>
+                  )}
+                </li>
+              )}
+
+              {subprojects.length > 0 && (
+                <div class="ml-4 space-y-1">
+                  {subprojects.map((subproject) =>
+                    currentProjectId === subproject.id ? (
+                      <div class="text-foreground bg-muted mobile-subposts-active-item flex items-center gap-2 rounded-md px-2 py-1.5 text-sm font-medium">
+                        <Icon
+                          name="lucide:file-text"
+                          class="size-4 flex-shrink-0"
+                          aria-hidden="true"
+                        />
+                        <div class="flex flex-col">
+                          <span class="line-clamp-2">
+                            {subproject.data.title}
+                          </span>
+                        </div>
+                      </div>
+                    ) : (
+                      <a
+                        href={`/projects/${subproject.id}`}
+                        class="mobile-subposts-link hover:text-foreground text-muted-foreground hover:bg-muted/50 flex items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors"
+                      >
+                        <Icon
+                          name="lucide:file"
+                          class="size-4 flex-shrink-0"
+                          aria-hidden="true"
+                        />
+                        <div class="flex flex-col">
+                          <span class="line-clamp-2">
+                            {subproject.data.title}
+                          </span>
+                        </div>
+                      </a>
+                    )
+                  )}
+                </div>
+              )}
+            </ul>
+          </div>
+        </ScrollArea>
+      </details>
+    </div>
+  )
+}
+
+<script>
+  class SubpostsState {
+    scrollArea: HTMLElement | null = null
+    detailsElement: HTMLDetailsElement | null = null
+    headerScrollArea: HTMLElement | null = null
+
+    reset() {
+      this.scrollArea = null
+      this.detailsElement = null
+      this.headerScrollArea = null
+    }
+  }
+
+  const state = new SubpostsState()
+
+  class SubpostsHeaderScrollMask {
+    static update() {
+      if (!state.scrollArea || !state.headerScrollArea) return
+
+      const { scrollTop, scrollHeight, clientHeight } = state.scrollArea
+      const threshold = 5
+      const isAtTop = scrollTop <= threshold
+      const isAtBottom = scrollTop >= scrollHeight - clientHeight - threshold
+
+      state.headerScrollArea.classList.toggle('mask-t-from-80%', !isAtTop)
+      state.headerScrollArea.classList.toggle('mask-b-from-80%', !isAtBottom)
+    }
+  }
+
+  class SubpostsScroll {
+    static toActive() {
+      if (!state.scrollArea) return
+
+      const activeItem = state.scrollArea.querySelector(
+        '.mobile-subposts-active-item'
+      )
+      if (!activeItem) return
+
+      const { top: areaTop, height: areaHeight } =
+        state.scrollArea.getBoundingClientRect()
+      const { top: itemTop, height: itemHeight } =
+        activeItem.getBoundingClientRect()
+
+      const currentItemTop = itemTop - areaTop + state.scrollArea.scrollTop
+      const targetScroll = Math.max(
+        0,
+        Math.min(
+          currentItemTop - (areaHeight - itemHeight) / 2,
+          state.scrollArea.scrollHeight - state.scrollArea.clientHeight
+        )
+      )
+
+      state.scrollArea.scrollTop = targetScroll
+    }
+
+    static setupInteraction() {
+      const container = document.getElementById('mobile-subposts-container')
+      if (!container) return
+
+      state.scrollArea = container.querySelector(
+        '[data-radix-scroll-area-viewport]'
+      )
+      state.detailsElement = container.querySelector('details')
+      state.headerScrollArea = container.querySelector(
+        '[data-subposts-header-scroll]'
+      )
+      const links = container.querySelectorAll('.mobile-subposts-link')
+
+      if (state.scrollArea) {
+        state.scrollArea.addEventListener(
+          'scroll',
+          SubpostsHeaderScrollMask.update,
+          { passive: true }
+        )
+      }
+
+      if (state.detailsElement) {
+        state.detailsElement.addEventListener('toggle', () => {
+          if (state.detailsElement?.open) {
+            requestAnimationFrame(() => {
+              SubpostsScroll.toActive()
+              setTimeout(SubpostsHeaderScrollMask.update, 100)
+            })
+          }
+        })
+      }
+
+      links.forEach((link) => {
+        link.addEventListener('click', () => {
+          if (state.detailsElement) state.detailsElement.open = false
+        })
+      })
+    }
+  }
+
+  class SubpostsController {
+    static init() {
+      state.reset()
+      SubpostsScroll.setupInteraction()
+    }
+
+    static cleanup() {
+      if (state.scrollArea) {
+        state.scrollArea.removeEventListener(
+          'scroll',
+          SubpostsHeaderScrollMask.update
+        )
+      }
+      state.reset()
+    }
+  }
+
+  document.addEventListener('astro:page-load', () => SubpostsController.init())
+  document.addEventListener('astro:after-swap', () => {
+    SubpostsController.cleanup()
+    SubpostsController.init()
+  })
+  document.addEventListener('astro:before-swap', () =>
+    SubpostsController.cleanup()
+  )
+</script>

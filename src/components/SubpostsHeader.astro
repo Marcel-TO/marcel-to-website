@@ -34,7 +34,7 @@ const subpostsWithReadingTime = await Promise.all(
   subposts.map(async (subpost) => ({
     ...subpost,
     readingTime: await getPostReadingTime(subpost.id),
-  })),
+  }))
 )
 
 const currentSubpostDetails = isCurrentSubpost
@@ -179,7 +179,7 @@ const currentSubpostDetails = isCurrentSubpost
                           </span>
                         </div>
                       </a>
-                    ),
+                    )
                   )}
                 </div>
               )}
@@ -225,7 +225,7 @@ const currentSubpostDetails = isCurrentSubpost
       if (!state.scrollArea) return
 
       const activeItem = state.scrollArea.querySelector(
-        '.mobile-subposts-active-item',
+        '.mobile-subposts-active-item'
       )
       if (!activeItem) return
 
@@ -239,8 +239,8 @@ const currentSubpostDetails = isCurrentSubpost
         0,
         Math.min(
           currentItemTop - (areaHeight - itemHeight) / 2,
-          state.scrollArea.scrollHeight - state.scrollArea.clientHeight,
-        ),
+          state.scrollArea.scrollHeight - state.scrollArea.clientHeight
+        )
       )
 
       state.scrollArea.scrollTop = targetScroll
@@ -251,11 +251,11 @@ const currentSubpostDetails = isCurrentSubpost
       if (!container) return
 
       state.scrollArea = container.querySelector(
-        '[data-radix-scroll-area-viewport]',
+        '[data-radix-scroll-area-viewport]'
       )
       state.detailsElement = container.querySelector('details')
       state.headerScrollArea = container.querySelector(
-        '[data-subposts-header-scroll]',
+        '[data-subposts-header-scroll]'
       )
       const links = container.querySelectorAll('.mobile-subposts-link')
 
@@ -263,7 +263,7 @@ const currentSubpostDetails = isCurrentSubpost
         state.scrollArea.addEventListener(
           'scroll',
           SubpostsHeaderScrollMask.update,
-          { passive: true },
+          { passive: true }
         )
       }
 
@@ -296,7 +296,7 @@ const currentSubpostDetails = isCurrentSubpost
       if (state.scrollArea) {
         state.scrollArea.removeEventListener(
           'scroll',
-          SubpostsHeaderScrollMask.update,
+          SubpostsHeaderScrollMask.update
         )
       }
       state.reset()
@@ -309,6 +309,6 @@ const currentSubpostDetails = isCurrentSubpost
     SubpostsController.init()
   })
   document.addEventListener('astro:before-swap', () =>
-    SubpostsController.cleanup(),
+    SubpostsController.cleanup()
   )
 </script>

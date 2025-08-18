@@ -4,22 +4,22 @@ import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { Icon } from 'astro-icon/components'
 
-const { newerPost, olderPost, parentPost } = Astro.props
+const { newerPost, olderPost, parentPost, path } = Astro.props
 const isSubpost = !!parentPost
 ---
 
 <nav
   class={cn(
     'col-start-2 grid grid-cols-1 gap-4',
-    isSubpost ? 'sm:grid-cols-3' : 'sm:grid-cols-2',
+    isSubpost ? 'sm:grid-cols-3' : 'sm:grid-cols-2'
   )}
 >
   <Link
-    href={olderPost ? `/blog/${olderPost.id}#post-title` : '#'}
+    href={olderPost ? `/${path}/${olderPost.id}#post-title` : '#'}
     class={cn(
       buttonVariants({ variant: 'outline' }),
       'rounded-lg group flex items-center justify-start size-full',
-      !olderPost && 'pointer-events-none opacity-50 cursor-not-allowed',
+      !olderPost && 'pointer-events-none opacity-50 cursor-not-allowed'
     )}
     aria-disabled={!olderPost}
   >
@@ -43,11 +43,11 @@ const isSubpost = !!parentPost
   {
     isSubpost && (
       <Link
-        href={parentPost ? `/blog/${parentPost.id}#post-title` : '#'}
+        href={parentPost ? `/${path}/${parentPost.id}#post-title` : '#'}
         class={cn(
           buttonVariants({ variant: 'outline' }),
           'group flex size-full items-center justify-center rounded-lg',
-          !parentPost && 'pointer-events-none cursor-not-allowed opacity-50',
+          !parentPost && 'pointer-events-none cursor-not-allowed opacity-50'
         )}
       >
         <Icon
@@ -59,7 +59,9 @@ const isSubpost = !!parentPost
             Parent Post
           </span>
           <span class="w-full text-center text-sm text-balance text-ellipsis">
-            {parentPost?.data.title || 'No parent post'}
+            {parentPost?.data.title ||
+              parentPost?.data.name ||
+              'No parent post'}
           </span>
         </div>
       </Link>
@@ -67,11 +69,11 @@ const isSubpost = !!parentPost
   }
 
   <Link
-    href={newerPost ? `/blog/${newerPost.id}#post-title` : '#'}
+    href={newerPost ? `/${path}/${newerPost.id}#post-title` : '#'}
     class={cn(
       buttonVariants({ variant: 'outline' }),
       'rounded-lg group flex items-center justify-end size-full',
-      !newerPost && 'pointer-events-none opacity-50 cursor-not-allowed',
+      !newerPost && 'pointer-events-none opacity-50 cursor-not-allowed'
     )}
     aria-disabled={!newerPost}
   >

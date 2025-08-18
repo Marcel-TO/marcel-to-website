@@ -26,7 +26,7 @@ const subpostCount = !isSubpost(entry.id) ? await getSubpostCount(entry.id) : 0
 ---
 
 <div
-  class="hover:bg-secondary/50 rounded-xl border p-4 transition-colors duration-300 ease-in-out"
+  class="rounded-xl border p-4 grayscale-75 backdrop-blur-2xl transition-all duration-200 ease-in-out hover:scale-101 hover:shadow-md hover:grayscale-0"
 >
   <Link
     href={`/${entry.collection}/${entry.id}`}
@@ -41,6 +41,7 @@ const subpostCount = !isSubpost(entry.id) ? await getSubpostCount(entry.id) : 0
             width={1200}
             height={630}
             class="object-cover"
+            transition:name={`blog-transition/${entry.id}`}
           />
         </div>
       )

@@ -1,0 +1,371 @@
+---
+title: 'The Editor in Detail | Frontend'
+description: 'A detailed guide on how to navigate through the frontend code.'
+tags: ['Tauri', 'Rust', 'Save Editor']
+contributors: ['me']
+order: 5
+---
+
+import Callout from '@/components/Callout.astro'
+
+If you are interested in contributing to the editor or want to change something that suits you more, than keep on reading. This page is dedicated to explaining the frontend code structure in detail. With the help of the following chapters you should have no trouble navigating through the codebase to add your own code.
+
+## Prerequisites
+
+When coding, adding and navigating through different files, an IDE is always helpful.
+Suggested setup:
+
+- VS Code
+  - VS Code Extension: rust-analyzer
+  - VS Code Extension: tauri Framework
+  - VS Code Extension: React
+
+## Where can I find the source code of the frontend?
+
+At first it might seem like there are too many folders and files. But where can I find the ones I actually need?
+Inside the `savegame-editor` directory you will find 2 different `src` files (`src` and `src-tauri`).
+
+- `src`: Contains the Frontend (UI)
+- `src-tauri`: Contains the Backend
+
+Therefore the main focus of this page will be dedicated to `src`.
+
+## What to do in `src`?
+
+The editor itself uses a frontend framework called **_React_**. A react application has the following base structure:
+
+```
+src
+  - assets
+  - App.css
+  - App.tsx
+  - main.tsx
+  - styles.css
+
+```
+
+### assets
+
+<Callout title="savegame-editor/src/assets" variant="explanation">
+  This directory contains all images you want to use inside the editor.
+</Callout>
+
+### App.css / styles.css
+
+<Callout title="savegame-editor/src/\*.css" variant="explanation">
+  They contain the CSS styles specifically for the `App.tsx` or `main.tsx`.
+  Those files are for the root components and only need adjustments when
+  changing something for the whole editor (like for example: font)
+</Callout>
+
+### main.tsx
+
+<Callout title="savegame-editor/src/main.tsx" variant="explanation">
+  This file serves as the entry point for the application. It typically renders
+  the root component of the React application into the DOM.
+</Callout>
+
+### App.tsx
+
+<Callout title="savegame-editor/src/App.tsx" variant="explanation">
+  This file contains the main component of the application. It also includes
+  routing logic and a state management setup. To add more routing options,
+  please follow dedicated section [Routing inside the
+  editor](#routing-inside-the-editor) to learn more.
+</Callout>
+
+### The other files (components, models, pages)
+
+The other directories contain different elements of the editor.
+
+For example, the `pages` directory contains all pages that the editor could use (as long as if a route is set to the page).
+The `components` directory contains components that are used inside one or multiple pages. This prevents code clustering when using the same code block in multiple sections and a better maintainability when changing
+
+## Routing inside the editor
+
+Inside the `App.tsx` you will find the route provider that prepares relative links to specific pages. Here an example on how the current route provider could be set up.
+
+To add a new page to the router, simply import the new page and create a new route:
+
+```tsx collapse={4-36} add={38}
+function App() {
+  const router = createBrowserRouter(
+    createRoutesFromElements([
+      <Route
+        path={'/'}
+        element={
+          <MainPage
+            currentSaveFile={currentSaveFile}
+            setCurrentSaveFile={setCurrentSaveFile}
+            setIdData={setCurrentIdDatas}
+          />
+        }
+      ></Route>,
+      <Route
+        path={'/skills'}
+        element={
+          <SkillPage
+            currentSaveFile={currentSaveFile}
+            setCurrentSaveFile={setCurrentSaveFile}
+          />
+        }
+      ></Route>,
+      <Route
+        path={'/unlockables'}
+        element={<UnlockablePage currentSaveFile={currentSaveFile} />}
+      ></Route>,
+      <Route
+        path={'/inventory'}
+        element={
+          <InventoryPage
+            currentSaveFile={currentSaveFile}
+            setCurrentSaveFile={setCurrentSaveFile}
+            idDatas={idDatas}
+          />
+        }
+      ></Route>,
+      <Route path={'/info'} element={<InfoPage />}></Route>,
+      <Route path={'/new-page'} element={<NewPage />}></Route>,
+    ]),
+  )
+
+  return (
+    <>
+      <Background />
+      <RouterProvider router={router}></RouterProvider>
+    </>
+  )
+}
+```
+
+Now if the editor gets directed to a new route that is called `/new-page` it will load the new page component.
+
+## How does the Navbar work?
+
+> savegame-editor/src/components/navbar-drawer/navbar-drawer.tsx
+
+The navigation tool for navigating between pages is being displayed at the left side of the screen.
+
+But how can you change an element or add another to the Navbar? Since the Navbar iterates through lists, you basically just have to enter a new element to the list. For editing purpose is only the part from line >[78](https://github.com/Marcel-TO/DL2_Save_Editor/blob/93402958efee6dd7654b0d447329004cfc02a2c3/savegame-editor/src/components/custom/custom-navbar-component.tsx#L78) interesting.
+
+Here an example of the `infoPages` section:
+
+```tsx
+const infoPages: [string, JSX.Element, string, boolean][] = [
+  [
+    'Knowledge Vault',
+    <BookOpenText className="h-5 w-5 transition-all group-hover:scale-110" />,
+    '/knowledge-vault',
+    false,
+  ],
+  [
+    'Hawks Outpost',
+    <StarIcon className="hover:fill-primary h-5 w-5 transition-all group-hover:scale-110" />,
+    '/hawks-outpost',
+    false,
+  ],
+]
+```
+
+Each element contains of 4 components. The first element is the name of the page. For example **_Home_** or **_Info_**. The second component is the Icon that gets displayed on the Navbar. If you want to change the icons, feel free to browse through [MUI Material Icons](https://mui.com/material-ui/material-icons/). The third component is the link to the dedicated page. The example in the [Routing inside the editor](#routing-inside-the-editor) chapter would be as displayed `/new-page`. And the last component represents the `isDisabled` variable. If set to `true` the Navbar item will be dark and not selectable.
+
+## How is a page set up?
+
+> savegame-editor/src/pages/new-page/new-page.tsx
+
+The structure of a page will be demonstrated with the ongoing new-page example.
+
+As explained in the previous chapter [What to do in `src`?](#what-to-do-in-src), if you want a global css format, you can use the `styles.css`.
+
+Lets start with preparing the page and including the Navbar for the page:
+
+```tsx
+import { NavbarComponent } from '@/components/custom/custom-navbar-component'
+
+export const NewPage = (): JSX.Element => {
+  return (
+    <>
+      <div className="flex min-h-screen w-full flex-col">
+        <NavbarComponent />
+        <div className="flex flex-col sm:gap-4 sm:py-4 sm:pl-14">
+          <main className="grid flex-1 items-start gap-4 p-4">
+            <div>
+              <h1 className="mb-4 text-3xl font-semibold">
+                Welcome to New Page
+              </h1>
+              ..... CONTENT
+            </div>
+          </main>
+        </div>
+      </div>
+    </>
+  )
+}
+```
+
+As you can see, the page is completely styled with TailwindCSS. The h1 is used for the title of the page. The rest can be up to you. The flex direction is column, so everything should be easy to added.
+
+In the example block above the content of the new page is only a header with the text "Welcome to New Page". Lets create a bit more complex page content:
+
+First you need to create a React Hook (or class depending on your preferences):
+
+```tsx add={4, 16-18}
+import { NavbarComponent } from '@/components/custom/custom-navbar-component'
+
+export const NewPage = (): JSX.Element => {
+  const [counter, setCounter] = useState(0)
+
+  return (
+    <>
+      <div className="flex min-h-screen w-full flex-col">
+        <NavbarComponent />
+        <div className="flex flex-col sm:gap-4 sm:py-4 sm:pl-14">
+          <main className="grid flex-1 items-start gap-4 p-4">
+            <div>
+              <h1 className="mb-4 text-3xl font-semibold">
+                Welcome to New Page
+              </h1>
+              <Button onClick={() => setCounter(counter--)}>-</Button>
+              <h1>{{ counter }}</h1>
+              <Button onClick={() => setCounter(counter++)}>+</Button>
+            </div>
+          </main>
+        </div>
+      </div>
+    </>
+  )
+}
+```
+
+> The example content is just displaying a counter where you can increase or decrease the value for showcasing purpose only. For more detail on how to implement content, please visit the react docs.
+
+## How to use the savefile properties for a new page
+
+> savegame-editor/src/pages/new-page/new-page.tsx
+
+In the previous example we explained how a new page is being implemented into the editor and how to customise the content of the new page. But what if you want to display or change something from the save? How can you link the current selected save to your new page?
+
+In this case we take advantage of reacts `useState` hook. With this hook you can not only declare a value, but also create a function to change the value. For further explanations, please read the following documentation: [State-Hook](https://legacy.reactjs.org/docs/hooks-state.html)
+
+In our Use-case we declare an empty save inside the root directory and give every page that needs it the save and the change function as property. The chapter [Routing inside the editor](#routing-inside-the-editor) already gave a little insight on how the pages are declared. But lets start from the beginning.
+
+The Page itself expects the properties:
+
+```diff lang="tsx"
+import { NavbarComponent } from "@/components/custom/custom-navbar-component";
+
+-export const NewPage = (): JSX.Element => {
++export const NewPage = ({currentSaveFile}: {currentSaveFile: SettingState<SaveFile | undefined>}): JSX.Element => {
+		const [counter, setCounter] = useState(0);
+
+    return (
+        <>
+	        <div className="flex min-h-screen w-full flex-col">
+		        <NavbarComponent />
+		        <div className="flex flex-col sm:gap-4 sm:py-4 sm:pl-14">
+		          <main className="grid flex-1 items-start gap-4 p-4">
+		            <div>
+		              <h1 className="text-3xl font-semibold mb-4">Welcome to New Page</h1>
+-                      <Button onClick={() => setCounter(counter--)}>-</Button>
+-                      <h1>{{ counter }}</h1>
+-                      <Button onClick={() => setCounter(counter++)}>+</Button>
++			             // Get the saveFile value -> currentSaveFile.value
++
++			             // Set the saveFile -> currentSaveFile.setValue(newSaveFile)
+		            </div>
+		          </main>
+	          </div>
+	        </div>
+        </>
+    )
+}
+```
+
+Inside the App.tsx (root) we declare the savefile (currently empty):
+
+```tsx
+const currentSaveFile: SettingState<SaveFile | undefined>
+```
+
+And the route where the page gets initialised:
+
+````diff lang="tsx" collapse={4-36}
+(<Route path={'/new-page'} element={<NewPage currentSaveFile={currentSaveFile}/>}></Route>),
+```tsx collapse={6-38} add={38}
+function App() {
+  const [currentSaveFile, setCurrentSaveFile] = useState<SaveFile>();
+
+  const router = createBrowserRouter(
+    createRoutesFromElements([
+      <Route
+        path={'/'}
+        element={
+          <MainPage
+            currentSaveFile={currentSaveFile}
+            setCurrentSaveFile={setCurrentSaveFile}
+            setIdData={setCurrentIdDatas}
+          />
+        }
+      ></Route>,
+      <Route
+        path={'/skills'}
+        element={
+          <SkillPage
+            currentSaveFile={currentSaveFile}
+            setCurrentSaveFile={setCurrentSaveFile}
+          />
+        }
+      ></Route>,
+      <Route
+        path={'/unlockables'}
+        element={<UnlockablePage currentSaveFile={currentSaveFile} />}
+      ></Route>,
+      <Route
+        path={'/inventory'}
+        element={
+          <InventoryPage
+            currentSaveFile={currentSaveFile}
+            setCurrentSaveFile={setCurrentSaveFile}
+            idDatas={idDatas}
+          />
+        }
+      ></Route>,
+      <Route path={'/info'} element={<InfoPage />}></Route>,
+-      <Route path={'/new-page'} element={<NewPage />}></Route>,
++      <Route path={'/new-page'} element={<NewPage currentSaveFile={currentSaveFile}/>}></Route>,
+    ]),
+  )
+
+  return (
+    <>
+      <Background />
+      <RouterProvider router={router}></RouterProvider>
+    </>
+  )
+}
+````
+
+Now the new page can display the data from the savefile.
+
+## How to change the savefile?
+
+If you try to edit the savefile and use the setCurrentSaveFile function it might appear as if the save actually changed. But if you would save the file, you would realise that all changes where visual and the save itself did not change. So, how do we fix it? We say hello to backend.
+The backend has multiple endpoints being prepared. Please visit the `src-tauri` Rust files for further details.
+
+In order to communicate with the backend we use a function called `invoke` and invoke a backend endpoint.
+For better explanation we will take a deeper look with the following example:
+
+```tsx
+async function submitChangingSomething(someParameter: number) {
+  invoke('change_something_from_save', {
+    parameter: someParameter,
+    save_connten: currentSaveFile.file_content,
+  }).then((new_save_content) => {
+    currentSave.file_content = new_save_content
+    currentSaveFile.setValue(currentSave)
+  })
+}
+```
+
+First we invoke a backend function called `change_something_from_save` (this is just an example and not a real backend function) and this function needs for example `someParameter` as a parameter.
+We await the function and if the call succeeds, then replace the current file_content with the new content and do a setValue() to change the currentSaveFile for all pages.
