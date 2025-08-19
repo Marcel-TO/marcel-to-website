@@ -129,6 +129,9 @@ const tocSections = await getTOCSections(currentPostId)
         >
           {post.data.title}
         </h1>
+        <p class="text-muted-foreground text-xs md:text-xl mb-8">
+          {post.data.description}
+        </p>
 
         <div
           class="text-muted-foreground divide-border mb-4 flex flex-col items-center justify-center divide-y text-xs sm:flex-row sm:flex-wrap sm:divide-x sm:divide-y-0 sm:text-sm"
@@ -278,7 +281,7 @@ const tocSections = await getTOCSections(currentPostId)
 
           scrollToTopButton.classList.toggle(
             'hidden',
-            window.scrollY <= 300 || isFooterVisible,
+            window.scrollY <= 300 || isFooterVisible
           )
         })
       }
