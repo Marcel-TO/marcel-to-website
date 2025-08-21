@@ -1,5 +1,6 @@
 ---
 import BlogCard from '@/components/BlogCard.astro'
+import HeroSection from '@/components/HeroSection.astro'
 import Link from '@/components/Link.astro'
 import PageHead from '@/components/PageHead.astro'
 import { buttonVariants } from '@/components/ui/button'
@@ -13,7 +14,7 @@ const blog = await getRecentPosts(SITE.featuredPostCount)
 
 <Layout class="max-w-3xl">
   <PageHead slot="head" title="Home" />
-  <section>
+  <!-- <section>
     <div class="bg-primary/10 rounded-lg border backdrop-blur-2xl">
       <div class="flex flex-col space-y-1.5 p-6">
         <h3 class="text-3xl leading-none font-medium">Marcel-TO</h3>
@@ -80,5 +81,8 @@ const blog = await getRecentPosts(SITE.featuredPostCount)
         >
       </Link>
     </div>
+  </section> -->
+  <section class="absolute w-screen h-full top-0 left-0 overflow-hidden">
+    <HeroSection />
   </section>
 </Layout>

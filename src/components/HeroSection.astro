@@ -1,0 +1,526 @@
+---
+import Link from '@/components/Link.astro'
+import { Button } from '@/components/ui/button'
+import { Icon } from 'astro-icon/components'
+
+// Attribute Icons
+const iconList = [
+  {
+    icon: 'lucide:file-chart-pie',
+    description: 'Data Engineer',
+    color: 'text-blue-400',
+    bg: 'bg-blue-400/20',
+  },
+  {
+    icon: 'lucide:code',
+    description: 'Programmer',
+    color: 'text-emerald-400',
+    bg: 'bg-emerald-400/20',
+  },
+  {
+    icon: 'lucide:gamepad-2',
+    description: 'Gamer',
+    color: 'text-purple-400',
+    bg: 'bg-purple-400/20',
+  },
+  {
+    icon: 'lucide:guitar',
+    description: 'Musician',
+    color: 'text-cyan-400',
+    bg: 'bg-cyan-400/20',
+  },
+]
+
+// Floating Background Icons
+const floatIcons = [
+  {
+    icon: 'lucide:database',
+    className: 'top-30 left-10',
+    color: 'text-blue-400 bg-blue-400/10',
+    size: 40,
+    glow: 'glow-blue',
+  },
+  {
+    icon: 'lucide:bar-chart-3',
+    className: 'top-32 right-20',
+    color: 'text-emerald-400 bg-emerald-400/10',
+    size: 35,
+    glow: 'glow-green',
+    duration: '7s',
+  },
+  {
+    icon: 'lucide:code',
+    className: 'bottom-40 left-20',
+    color: 'text-purple-400 bg-purple-400/10',
+    size: 30,
+    glow: 'glow-purple',
+    duration: '3s',
+  },
+  {
+    icon: 'lucide:trending-up',
+    className: 'bottom-20 right-10',
+    color: 'text-cyan-400 bg-cyan-400/10',
+    size: 45,
+    glow: 'glow-cyan',
+    duration: '5s',
+  },
+  {
+    icon: 'lucide:git-branch',
+    className: 'top-1/3 left-1/4',
+    color: 'text-yellow-400 bg-yellow-400/10',
+    size: 28,
+    glow: 'glow-yellow',
+    duration: '8s',
+  },
+  {
+    icon: 'lucide:server',
+    className: 'bottom-1/3 right-1/4',
+    color: 'text-pink-400 bg-pink-400/10',
+    size: 32,
+    glow: 'glow-pink',
+    duration: '9s',
+  },
+  {
+    icon: 'lucide:brain',
+    className: 'top-1/2 left-5',
+    color: 'text-indigo-400 bg-indigo-400/10',
+    size: 25,
+    glow: 'glow-indigo',
+    duration: '3s',
+  },
+  {
+    icon: 'lucide:zap',
+    className: 'top-1/3 right-5',
+    color: 'text-orange-400 bg-orange-400/10',
+    size: 28,
+    glow: 'glow-orange',
+    duration: '4s',
+  },
+  {
+    icon: 'lucide:cpu',
+    className: 'bottom-1/3 left-1/3',
+    color: 'text-teal-400 bg-teal-400/10',
+    size: 26,
+    glow: 'glow-teal',
+    duration: '6s',
+  },
+]
+
+// Skill Badges
+const skills = [
+  { skill: 'Python', color: 'text-indigo-400 bg-indigo-400/10' },
+  {
+    skill: 'SQL',
+    color: 'border-emerald-400/30 text-emerald-300 bg-emerald-400/10',
+  },
+  {
+    skill: 'Azure',
+    color: 'border-blue-400/30 text-blue-300 bg-blue-400/10',
+  },
+  { skill: 'Docker', color: 'border-cyan-400/30 text-cyan-300 bg-cyan-400/10' },
+  {
+    skill: 'Power BI',
+    color: 'border-yellow-400/30 text-yellow-300 bg-yellow-400/10',
+  },
+  {
+    skill: 'And More',
+    color: 'border-orange-400/30 text-orange-300 bg-orange-400/10',
+  },
+]
+---
+
+<section
+  class="relative flex min-h-screen w-full items-center justify-center overflow-hidden"
+>
+  <div class="pointer-events-none absolute inset-0 overflow-hidden">
+    {/* Floating icons with glow */}
+    {
+      floatIcons.map(
+        ({ icon, className, color, size, glow, duration }, idx) => (
+          <div
+            class={
+              `absolute ${className} float-icon xs:block hidden transition-all sm:block md:block` +
+              (idx > 3 ? ' md:block lg:block' : '')
+            }
+            style={duration ? `animation-duration:${duration}` : ''}
+          >
+            <div
+              class={`rounded-full p-2 backdrop-blur-sm sm:p-3 ${color} ${glow} transition-all`}
+              style={duration ? `animation-duration:${duration}` : ''}
+            >
+              <Icon
+                name={icon}
+                size={size > 32 ? 24 : 20}
+                class="block sm:hidden"
+              />
+              <Icon name={icon} size={size} class="hidden sm:block" />
+            </div>
+          </div>
+        ),
+      )
+    }
+
+    {/* Data streams with CSS animation */}
+    <svg
+      class="xs:block absolute inset-0 h-full w-full opacity-50 sm:block"
+      viewBox="0 0 1000 1000"
+    >
+      <path
+        d="M100,200 Q300,100 500,200 T900,200"
+        stroke="url(#gradient1)"
+        stroke-width="4"
+        fill="none"
+        class="datastream"
+        style="animation-delay:0s"></path>
+      <path
+        d="M100,400 Q400,300 700,400 T900,400"
+        stroke="url(#gradient2)"
+        stroke-width="4"
+        fill="none"
+        class="datastream"
+        style="animation-delay:1s"></path>
+      <path
+        d="M100,600 Q350,500 600,600 T900,600"
+        stroke="url(#gradient1)"
+        stroke-width="4"
+        fill="none"
+        class="datastream"
+        style="animation-delay:2s"></path>
+      <defs>
+        <linearGradient id="gradient1" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#3b82f6" stop-opacity="0"></stop>
+          <stop offset="50%" stop-color="#3b82f6" stop-opacity="1"></stop>
+          <stop offset="100%" stop-color="#8b5cf6" stop-opacity="0"></stop>
+        </linearGradient>
+        <linearGradient id="gradient2" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#10b981" stop-opacity="0"></stop>
+          <stop offset="50%" stop-color="#10b981" stop-opacity="1"></stop>
+          <stop offset="100%" stop-color="#3b82f6" stop-opacity="0"></stop>
+        </linearGradient>
+      </defs>
+    </svg>
+  </div>
+
+  {/* Main content */}
+  <div
+    class="animate-fadein relative z-10 mx-auto max-w-4xl px-3 text-center sm:px-6"
+  >
+    <div class="mb-6 flex items-center justify-center gap-4 sm:mb-8 sm:gap-8">
+      {
+        iconList.map(({ icon, description, color, bg }, index) => (
+          <div class="group relative flex flex-col items-center transition-all">
+            <div
+              class={`flex items-center gap-2 rounded-xl p-2 sm:rounded-2xl sm:p-4 ${bg} ${color} icon-animate min-h-[56px] min-w-[56px] cursor-pointer border border-white/10 backdrop-blur-sm transition-all`}
+              style={`animation-delay:${0.2 + index * 0.15}s`}
+            >
+              <Icon name={icon} size={28} />
+            </div>
+            <span
+              class={`mt-2 max-h-0 overflow-hidden text-sm whitespace-nowrap opacity-0 transition-all duration-200 group-hover:max-h-10 group-hover:opacity-100 ${color}`}
+              style="transition-property:opacity,max-height;min-height:1.5em;"
+              aria-hidden="true"
+            >
+              {description}
+            </span>
+          </div>
+        ))
+      }
+    </div>
+    <h1
+      class="text-primary-foreground xs:text-4xl mb-4 flex flex-col text-3xl leading-tight font-bold sm:mb-6 sm:text-5xl md:text-7xl"
+    >
+      Marcel-TO
+      <div
+        class="xs:gap-4 flex w-full flex-row flex-wrap justify-center gap-2 sm:gap-6"
+      >
+        <span
+          class="bg-300% animate-gradient-x bg-gradient-to-r from-blue-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent"
+        >
+          Passion
+        </span>
+        into
+        <span
+          class="bg-300% animate-gradient-x bg-gradient-to-r from-emerald-400 via-teal-400 to-blue-400 bg-clip-text text-transparent"
+          style="animation-delay:1.5s"
+        >
+          Software
+        </span>
+      </div>
+    </h1>
+    <p
+      class="text-muted-foreground fadein-delayed xs:max-w-md xs:text-lg mx-auto mb-6 max-w-xs text-base leading-relaxed sm:mb-8 sm:max-w-2xl sm:text-xl md:text-2xl"
+    >
+      Welcome to my personal website! Here you can find projects I've worked on,
+      blog posts I've written, documentation about my Open Source projects, and
+      more about my interests and hobbies.
+    </p>
+    <div class="mb-8 flex flex-wrap justify-center gap-2 sm:mb-10 sm:gap-3">
+      {
+        skills.map(({ skill, color }, index) => (
+          <span
+            class={`px-3 py-2 sm:px-5 sm:py-3 ${color} skill-animate rounded-xl border text-xs font-medium backdrop-blur-sm transition-all duration-300 sm:rounded-2xl sm:text-sm`}
+            style={`animation-delay:${1 + index * 0.1}s`}
+          >
+            {skill}
+          </span>
+        ))
+      }
+    </div>
+    <div
+      class="flex flex-col items-center justify-center gap-2 sm:flex-row sm:gap-4"
+    >
+      <div class="button-animate">
+        <Link href="/projects" aria-label="View my Work" title="View my Work">
+          <Button
+            variant="outline"
+            size="lg"
+            className="cursor-pointer rounded-xl border-2 border-blue-400/50 bg-transparent px-6 py-3 text-base font-semibold text-blue-300 backdrop-blur-sm transition-all duration-300 hover:border-blue-400 hover:bg-blue-400/10 hover:text-blue-200 sm:rounded-2xl sm:px-10 sm:py-4 sm:text-lg"
+          >
+            View My Work
+          </Button>
+        </Link>
+      </div>
+      <div class="button-animate">
+        <Link href="/about" aria-label="Learn More" title="Learn More">
+          <Button
+            variant="outline"
+            size="lg"
+            className="cursor-pointer rounded-xl border-2 border-transparent bg-transparent px-6 py-3 text-base font-semibold text-emerald-300 backdrop-blur-sm transition-all duration-300 hover:border-emerald-400 hover:bg-emerald-400/10 hover:text-emerald-200 sm:rounded-2xl sm:px-10 sm:py-4 sm:text-lg"
+          >
+            Learn More about Me
+          </Button>
+        </Link>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    @media (max-width: 640px) {
+      .max-w-4xl {
+        max-width: 100vw !important;
+      }
+      .float-icon {
+        opacity: 0.5;
+      }
+    }
+    @media (max-width: 480px) {
+      .max-w-4xl {
+        max-width: 100vw !important;
+      }
+      .float-icon {
+        display: none !important;
+      }
+      .icon-animate {
+        margin: 0 2px;
+      }
+    }
+    /* Gradient animation for text */
+    @keyframes gradient-x {
+      0%,
+      100% {
+        background-position: 0% 50%;
+      }
+      50% {
+        background-position: 100% 50%;
+      }
+    }
+    .animate-gradient-x {
+      animation: gradient-x 20s ease-in-out infinite;
+      background-size: 300% 300%;
+    }
+    /* Data streams animation */
+    .datastream {
+      stroke-dasharray: 1400;
+      stroke-dashoffset: 1400;
+      opacity: 0;
+      animation: datastream 4s ease-in-out infinite;
+    }
+    .datastream:nth-child(2) {
+      animation-delay: 1s;
+    }
+    .datastream:nth-child(3) {
+      animation-delay: 2s;
+    }
+    @keyframes datastream {
+      0% {
+        stroke-dashoffset: 1400;
+        opacity: 0;
+      }
+      20% {
+        opacity: 1;
+      }
+      50% {
+        stroke-dashoffset: 0;
+        opacity: 1;
+      }
+      80% {
+        opacity: 1;
+      }
+      100% {
+        stroke-dashoffset: 1400;
+        opacity: 0;
+      }
+    }
+
+    /* Floating icons */
+    .float-icon {
+      animation: floatY 4s ease-in-out infinite;
+    }
+    @keyframes floatY {
+      0% {
+        transform: translateY(-5px);
+      }
+      50% {
+        transform: translateY(5px);
+      }
+      100% {
+        transform: translateY(-5px);
+      }
+    }
+    /* Icon glow */
+    .glow-blue {
+      animation: glow-blue 3s ease-in-out infinite;
+    }
+    .glow-green {
+      animation: glow-green 3s ease-in-out infinite;
+    }
+    .glow-purple {
+      animation: glow-purple 3s ease-in-out infinite;
+    }
+    .glow-cyan {
+      animation: glow-cyan 3s ease-in-out infinite;
+    }
+    .glow-yellow {
+      animation: glow-yellow 3s ease-in-out infinite;
+    }
+    .glow-pink {
+      animation: glow-pink 3s ease-in-out infinite;
+    }
+    .glow-teal {
+      animation: glow-teal 3s ease-in-out infinite;
+    }
+    .glow-indigo {
+      animation: glow-indigo 3s ease-in-out infinite;
+    }
+    .glow-orange {
+      animation: glow-orange 3s ease-in-out infinite;
+    }
+    @keyframes glow-blue {
+      0%,
+      100% {
+        box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+      }
+      50% {
+        box-shadow: 0 0 40px rgba(59, 130, 246, 0.6);
+      }
+    }
+    @keyframes glow-green {
+      0%,
+      100% {
+        box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
+      }
+      50% {
+        box-shadow: 0 0 40px rgba(16, 185, 129, 0.6);
+      }
+    }
+    @keyframes glow-purple {
+      0%,
+      100% {
+        box-shadow: 0 0 20px rgba(168, 85, 247, 0.3);
+      }
+      50% {
+        box-shadow: 0 0 40px rgba(168, 85, 247, 0.6);
+      }
+    }
+    @keyframes glow-cyan {
+      0%,
+      100% {
+        box-shadow: 0 0 20px rgba(34, 211, 238, 0.3);
+      }
+      50% {
+        box-shadow: 0 0 40px rgba(34, 211, 238, 0.6);
+      }
+    }
+    @keyframes glow-yellow {
+      0%,
+      100% {
+        box-shadow: 0 0 20px rgba(250, 204, 21, 0.3);
+      }
+      50% {
+        box-shadow: 0 0 40px rgba(250, 204, 21, 0.6);
+      }
+    }
+    @keyframes glow-pink {
+      0%,
+      100% {
+        box-shadow: 0 0 20px rgba(236, 72, 153, 0.3);
+      }
+      50% {
+        box-shadow: 0 0 40px rgba(236, 72, 153, 0.6);
+      }
+    }
+    @keyframes glow-teal {
+      0%,
+      100% {
+        box-shadow: 0 0 20px rgba(20, 184, 166, 0.3);
+      }
+      50% {
+        box-shadow: 0 0 40px rgba(20, 184, 166, 0.6);
+      }
+    }
+    @keyframes glow-indigo {
+      0%,
+      100% {
+        box-shadow: 0 0 20px rgba(99, 102, 241, 0.3);
+      }
+      50% {
+        box-shadow: 0 0 40px rgba(99, 102, 241, 0.6);
+      }
+    }
+    @keyframes glow-orange {
+      0%,
+      100% {
+        box-shadow: 0 0 20px rgba(251, 146, 60, 0.3);
+      }
+      50% {
+        box-shadow: 0 0 40px rgba(251, 146, 60, 0.6);
+      }
+    }
+    /* Main content fade-in and items animation */
+    .animate-fadein {
+      animation: fadein 0.8s 0.2s both;
+    }
+    @keyframes fadein {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: none;
+      }
+    }
+    .icon-animate {
+      animation: fadein 0.8s both;
+    }
+    .skill-animate {
+      animation: flipin 0.6s both;
+    }
+    @keyframes flipin {
+      from {
+        opacity: 0;
+        transform: scale(0) rotateY(180deg);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1) rotateY(0deg);
+      }
+    }
+    .fadein-delayed {
+      animation: fadein 0.8s 0.5s both;
+    }
+    .button-animate {
+      animation: fadein 0.8s 0.7s both;
+    }
+  </style>
+</section>
