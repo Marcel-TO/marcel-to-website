@@ -2,6 +2,7 @@
 import Link from '@/components/Link.astro'
 import { Button } from '@/components/ui/button'
 import { Icon } from 'astro-icon/components'
+import DataFlowAnimation from './DataFlowAnimation.astro'
 
 // Attribute Icons
 const iconList = [
@@ -159,47 +160,7 @@ const skills = [
         ),
       )
     }
-
-    {/* Data streams with CSS animation */}
-    <svg
-      class="xs:block absolute inset-0 h-full w-full opacity-50 sm:block"
-      viewBox="0 0 1000 1000"
-    >
-      <path
-        d="M100,200 Q300,100 500,200 T900,200"
-        stroke="url(#gradient1)"
-        stroke-width="4"
-        fill="none"
-        class="datastream"
-        style="animation-delay:0s"></path>
-      <path
-        d="M100,400 Q400,300 700,400 T900,400"
-        stroke="url(#gradient2)"
-        stroke-width="4"
-        fill="none"
-        class="datastream"
-        style="animation-delay:1s"></path>
-      <path
-        d="M100,600 Q350,500 600,600 T900,600"
-        stroke="url(#gradient1)"
-        stroke-width="4"
-        fill="none"
-        class="datastream"
-        style="animation-delay:2s"></path>
-      <defs>
-        <linearGradient id="gradient1" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stop-color="#3b82f6" stop-opacity="0"></stop>
-          <stop offset="50%" stop-color="#3b82f6" stop-opacity="1"></stop>
-          <stop offset="100%" stop-color="#8b5cf6" stop-opacity="0"></stop>
-        </linearGradient>
-        <linearGradient id="gradient2" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stop-color="#10b981" stop-opacity="0"></stop>
-          <stop offset="50%" stop-color="#10b981" stop-opacity="1"></stop>
-          <stop offset="100%" stop-color="#3b82f6" stop-opacity="0"></stop>
-        </linearGradient>
-      </defs>
-    </svg>
-  </div>
+    <DataFlowAnimation />
 
   {/* Main content */}
   <div
@@ -208,15 +169,15 @@ const skills = [
     <div class="mb-6 flex items-center justify-center gap-4 sm:mb-8 sm:gap-8">
       {
         iconList.map(({ icon, description, color, bg }, index) => (
-          <div class="group relative flex flex-col items-center transition-all">
+          <div class="group relative flex flex-col items-center justify-center transition-all">
             <div
-              class={`flex items-center gap-2 rounded-xl p-2 sm:rounded-2xl sm:p-4 ${bg} ${color} icon-animate min-h-[56px] min-w-[56px] cursor-pointer border border-white/10 backdrop-blur-sm transition-all`}
+              class={`flex items-center justify-center gap-2 rounded-xl p-2 sm:rounded-2xl sm:p-4 ${bg} ${color} icon-animate h-[56px] w-[56px] cursor-pointer border border-white/10 backdrop-blur-sm transition-all`}
               style={`animation-delay:${0.2 + index * 0.15}s`}
             >
               <Icon name={icon} size={28} />
             </div>
             <span
-              class={`mt-2 max-h-0 overflow-hidden text-sm whitespace-nowrap opacity-0 transition-all duration-200 group-hover:max-h-10 group-hover:opacity-100 ${color}`}
+              class={`mt-2 max-h-0 w-[56px] flex justify-center items-center text-sm whitespace-nowrap opacity-0 transition-all duration-200 group-hover:max-h-10 group-hover:opacity-100 ${color}`}
               style="transition-property:opacity,max-height;min-height:1.5em;"
               aria-hidden="true"
             >
@@ -327,39 +288,6 @@ const skills = [
     .animate-gradient-x {
       animation: gradient-x 20s ease-in-out infinite;
       background-size: 300% 300%;
-    }
-    /* Data streams animation */
-    .datastream {
-      stroke-dasharray: 1400;
-      stroke-dashoffset: 1400;
-      opacity: 0;
-      animation: datastream 4s ease-in-out infinite;
-    }
-    .datastream:nth-child(2) {
-      animation-delay: 1s;
-    }
-    .datastream:nth-child(3) {
-      animation-delay: 2s;
-    }
-    @keyframes datastream {
-      0% {
-        stroke-dashoffset: 1400;
-        opacity: 0;
-      }
-      20% {
-        opacity: 1;
-      }
-      50% {
-        stroke-dashoffset: 0;
-        opacity: 1;
-      }
-      80% {
-        opacity: 1;
-      }
-      100% {
-        stroke-dashoffset: 1400;
-        opacity: 0;
-      }
     }
 
     /* Floating icons */

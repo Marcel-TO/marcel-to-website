@@ -48,6 +48,6 @@ export const ICON_MAP: IconMap = {
     GitHub: 'lucide:github',
     Repo: 'lucide:code',
     Sponsor: 'lucide:heart',
-    Discord: 'discord',
+    Discord: 'simple-icons:discord',
     Website: 'lucide:globe',
 }

@@ -2,6 +2,7 @@
 import AuthorCard from '@/components/AuthorCard.astro'
 import BlogCard from '@/components/BlogCard.astro'
 import Breadcrumbs from '@/components/Breadcrumbs.astro'
+import DataFlowAnimation from '@/components/DataFlowAnimation.astro'
 import PageHead from '@/components/PageHead.astro'
 import ProjectCard from '@/components/ProjectCard.astro'
 import Layout from '@/layouts/Layout.astro'
@@ -11,6 +12,90 @@ import { Icon } from 'astro-icon/components'
 const projects = await getProjectsById(['dl2-save-editor'])
 const blogPosts = await getPostsById(['post-1', 'post-2'])
 const me = await getAuthorById('me')
+
+const frontendTechstack = [
+  {
+    skill: 'React',
+    icon: 'simple-icons:react',
+    color: 'text-[#61DAFB]',
+  },
+  {
+    skill: 'Angular',
+    icon: 'simple-icons:angular',
+    color: 'text-[#dd1b16]',
+  },
+  {
+    skill: 'Astro',
+    icon: 'simple-icons:astro',
+    color: 'text-[#BC52EE]',
+  },
+  {
+    skill: 'Flutter',
+    icon: 'simple-icons:flutter',
+    color: 'text-[#02569B]',
+  },
+  {
+    skill: 'React Native',
+    icon: 'simple-icons:react',
+    color: 'text-[#61DAFB]',
+  },
+]
+
+const languagesTechstack = [
+  {
+    skill: 'C#',
+    icon: 'simple-icons:sharp',
+    color: 'text-[#99CC00]',
+  },
+  {
+    skill: 'Java',
+    icon: 'java-icon',
+    color: 'text-[#61DAFB]',
+  },
+  {
+    skill: 'Python',
+    icon: 'simple-icons:python',
+    color: 'text-[#3776AB]',
+  },
+  {
+    skill: 'Rust',
+    icon: 'simple-icons:rust',
+    color: 'text-[#000000] bg-[#E34F26] rounded-full',
+  },
+  {
+    skill: 'Go',
+    icon: 'simple-icons:go',
+    color: 'text-[#00ADD8]',
+  },
+  {
+    skill: 'Haskell',
+    icon: 'simple-icons:haskell',
+    color: 'text-[#5D4F85]',
+  },
+]
+
+const CloudTechstack = [
+  {
+    skill: 'Azure',
+    icon: 'azure',
+    color: 'text-[#007FFF]',
+  },
+  {
+    skill: 'AWS',
+    icon: 'aws',
+    color: 'text-[#FF9900]',
+  },
+  {
+    skill: 'Docker',
+    icon: 'simple-icons:docker',
+    color: 'text-[#2496ED]',
+  },
+  {
+    skill: 'Kubernetes',
+    icon: 'simple-icons:kubernetes',
+    color: 'text-[#326CE5]',
+  },
+]
 ---
 
 <Layout class="max-w-3xl">
@@ -18,6 +103,7 @@ const me = await getAuthorById('me')
   <Breadcrumbs items={[{ label: 'About', icon: 'lucide:info' }]} />
 
   <section>
+    <DataFlowAnimation />
     <div class="mb-8 min-w-full">
       {me && <AuthorCard author={me} />}
 
@@ -62,6 +148,64 @@ const me = await getAuthorById('me')
         </div>
       </div>
     </div>
+
+    <section class="flex flex-col gap-y-4">
+      <h2 class="text-2xl font-medium">Programming Languages</h2>
+      <div class="mb-8 flex flex-wrap justify-center gap-2 sm:mb-10 sm:gap-3">
+        {
+          languagesTechstack.map(({ skill, icon, color }, index) => (
+            <span
+              class={`skill-animate group rounded-md border px-3 py-2 text-xs font-medium backdrop-blur-sm transition-all duration-300 sm:px-5 sm:py-3 sm:text-sm`}
+              style={`animation-delay:${1 + index * 0.1}s`}
+            >
+              <Icon
+                name={icon}
+                class={`mr-1 inline-block ${color} transition-transform group-hover:scale-120`}
+              />
+              {skill}
+            </span>
+          ))
+        }
+      </div>
+
+      <h2 class="text-2xl font-medium">Frontend Knowledge</h2>
+      <div class="mb-8 flex flex-wrap justify-center gap-2 sm:mb-10 sm:gap-3">
+        {
+          frontendTechstack.map(({ skill, icon, color }, index) => (
+            <span
+              class={`skill-animate group rounded-md border px-3 py-2 text-xs font-medium backdrop-blur-sm transition-all duration-300 sm:px-5 sm:py-3 sm:text-sm`}
+              style={`animation-delay:${1 + index * 0.1}s`}
+            >
+              <Icon
+                name={icon}
+                class={`mr-1 inline-block ${color} transition-transform group-hover:scale-120`}
+              />
+              {skill}
+            </span>
+          ))
+        }
+      </div>
+
+      <h2 class="text-2xl font-medium">Cloud Technologies</h2>
+      <div class="mb-8 flex flex-wrap justify-center gap-2 sm:mb-10 sm:gap-3">
+        {
+          CloudTechstack.map(({ skill, icon, color }, index) => (
+            <span
+              class={`skill-animate group rounded-md border px-3 py-2 text-xs font-medium backdrop-blur-sm transition-all duration-300 sm:px-5 sm:py-3 sm:text-sm`}
+              style={`animation-delay:${1 + index * 0.1}s`}
+            >
+              <Icon
+                name={icon}
+                class={`mr-1 inline-block ${color} transition-transform group-hover:scale-120`}
+              />
+              {skill}
+            </span>
+          ))
+        }
+      </div>
+    </section>
+
+    <hr class="border-muted-foreground/20 my-12 border-t" />
 
     <section class="flex flex-col gap-y-4">
       <h2 class="text-2xl font-medium">Pinned Projects</h2>
