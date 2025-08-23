@@ -11,30 +11,30 @@ import Callout from '@/components/Callout.astro'
 
 ## Introduction
 
-This blog documents my journey from the beginning of how I got started with save editing and learning its structures to creating an application for thousands of users. As you may know I am the author of the Open Source [DL2 Save Editor](https://github.com/Marcel-TO/DL2_Save_Editor) for the video game ([Dying Light 2](https://dyinglightgame.com/dying-light-2/)) and it was a long and uneven road to automate the editing part and data manipulation, so lets start at the beginning.
+This blog documents my journey from the beginning of how I got started with save editing and learning its structures to creating an application for thousands of users. As you may know, I am the author of the Open Source [DL2 Save Editor](https://github.com/Marcel-TO/DL2_Save_Editor) for the video game ([Dying Light 2](https://dyinglightgame.com/dying-light-2/)), and it was a long and uneven road to automate the editing part and data manipulation. So, let's start at the beginning.
 
 ## What is Save Editing?
 
-Let's assume you, the reader, are a gamer such as myself. When playing your favorite game, you will probably stumble accross a popup that says something like "Game has been saved" or "Progress saved". Did you ever wonder how it is being stored? In most cases the progress will be stored in a savefile somewhere in your gamefiles. Depending on the development of the game, the file itself can come in various shapes. Commonly used formats are `.json`, `.xml` or `binary` files. Keep in mind that something like this is based on single player games, since manipulating the game can lead to unfair advantageous and should never be used in multiplayer games.
+Let's assume you, the reader, are a gamer like myself. When playing your favorite game, you will probably stumble across a popup that says something like "Game has been saved" or "Progress saved." Did you ever wonder how it is being stored? In most cases, the progress will be stored in a save file somewhere in your game files. Depending on the development of the game, the file itself can come in various forms. Commonly used formats are `.json`, `.xml`, or `binary` files. Keep in mind that this is based on single-player games, since manipulating the game can lead to unfair advantages and should never be used in multiplayer games.
 
-Those files hold information about the gamestate. For example how much experience one gained, what items are in the inventory or what skills are unlocked. Changing them can manipulate the game and, depending on what you changed, lead to advantages inside the game. This process is commonly known as save editing.
+Those files hold information about the game state. For example, how much experience one has gained, what items are in the inventory, or what skills are unlocked. Changing them can manipulate the game and, depending on what you changed, lead to advantages inside the game. This process is commonly known as save editing.
 
-As mentioned above, there is more than one way to store the gamestate. This blog does not focus `.json` and `.xml` files since they are already very userfriendly and mostly self explanatory but also because [Dying Light 2](https://dyinglightgame.com/dying-light-2/) does store its content as binary.
+As mentioned above, there is more than one way to store the game state. This blog does not focus on `.json` and `.xml` files since they are already very user-friendly and mostly self-explanatory, but also because [Dying Light 2](https://dyinglightgame.com/dying-light-2/) stores its content as binary.
 
-## The Right Tools for the job
+## The Right Tools for the Job
 
-Opening a savefile with a text editor will get you nowhere. The content is pure gibberish. So how do I extract the information I need? The answer you are looking for is a **_Hex Editor_**.
+Opening a save file with a text editor will get you nowhere. The content is pure gibberish. So how do I extract the information I need? The answer you are looking for is a **_Hex Editor_**.
 
-<Callout title="Why Hex Edior?" variant="explanation">
-  The content is stored in bytes. Bytes are not very readable. A Hex Editor
-  converts the bytes into its corresponding hex values and structures the
-  layout. On the left side you will see the Hex values and on the right side you
-  will see the encoded string text. The following image shows an example of how
-  an opened savefile looks like: ![Hex Editor Example of
-  SaveFile](./images/hex-example.png)
+<Callout title="Why Hex Editor?" variant="explanation">
+    The content is stored in bytes. Bytes are not very readable. A Hex Editor
+    converts the bytes into their corresponding hex values and structures the
+    layout. On the left side, you will see the hex values, and on the right side, you
+    will see the encoded string text. The following image shows an example of how
+    an opened save file looks: ![Hex Editor Example of
+    SaveFile](./images/hex-example.png)
 </Callout>
 
-### List of Hex Editors I personally used:
+### List of Hex Editors I Personally Used:
 
 - [ImHex](https://github.com/WerWolv/ImHex)
 - [HxD](https://mh-nexus.de/de/hxd/)
@@ -42,51 +42,51 @@ Opening a savefile with a text editor will get you nowhere. The content is pure 
 
 ### Encryption/Decryption
 
-If you are planning to edit a Playstation save for example, keep in mind that in order to gain access to the savefile itself you need to decrypt your save. Please follow tutorials for either **_Save Wizard_** or **_PS Bots_**.
+If you are planning to edit a PlayStation save, for example, keep in mind that in order to gain access to the save file itself, you need to decrypt your save. Please follow tutorials for either **_Save Wizard_** or **_PS Bots_**.
 
 ### Compression
 
-Some saves, depending on its origin (PC saves in general or saves from **_PS Bot_**) compress the savefile. In case of **_DL2_** the PC saves are compressed with gzip.
+Some saves, depending on their origin (PC saves in general or saves from **_PS Bot_**), compress the save file. In the case of **_DL2_**, the PC saves are compressed with gzip.
 
 ## Data Types
 
-After everything is prepared in the previous chapter, we can now open the savefile and unravel its content. Some snippets are readable, but no clue where we start now. Great. An important part of save editing is knowing what kind of data types are being used inside a savefile. 2 Bytes can mean different things:
+After everything is prepared in the previous chapter, we can now open the save file and unravel its content. Some snippets are readable, but there is no clue where to start now. Great. An important part of save editing is knowing what kind of data types are being used inside a save file. Two bytes can mean different things:
 
 ![Hex Data Types](./images/hex-datatypes.png)
 
-Lets analyse the highlighted hex values `90 1C` from the image. Those hex values represent the level number of one of the items (more regarding that later). As you can see, depending on what data type it represents in the game, the values are different.
+Let's analyze the highlighted hex values `90 1C` from the image. Those hex values represent the level number of one of the items (more regarding that later). As you can see, depending on what data type it represents in the game, the values are different.
 
 <div class="[&_td]:align-middle">
 | Variant | Usage |
 | ------- | ----- |
-| <span class="flex items-center gap-2 border-purple-500 dark:bg-purple-950/10 text-purple-700 dark:text-purple-300 px-2 py-1 border-l-4"> Signed 8-bit integer (int8)</span> | 1 byte - Range: $−128 >= x <= 127$ |
-| <span class="flex items-center gap-2 border-teal-500 dark:bg-teal-950/10 text-teal-700 dark:text-teal-300 px-2 py-1 border-l-4">Unsigned 8-bit integer (uint8)</span> | 1 byte -  Range: $0 >= x <= 255$ |
-| <span class="flex items-center gap-2 border-sky-400 dark:bg-sky-950/10 text-sky-700 dark:text-sky-300 px-2 py-1 border-l-4">Signed 16-bit integer (int16)</span> | 2 bytes - Range: $−32,768 >= x <= 32,767$ |
-| <span class="flex items-center gap-2 border-emerald-500 dark:bg-emerald-950/10 text-emerald-700 dark:text-emerald-300 px-2 py-1 border-l-4">Unsigned 16-bit integer (uint16)</span> | 2 bytes - Range: $0 >= x <= 65,535$ |
-| <span class="flex items-center gap-2 border-cyan-500 dark:bg-cyan-950/10 text-cyan-700 dark:text-cyan-300 px-2 py-1 border-l-4">Signed 32-bit integer (int32)</span> | 4 bytes - Range: $−2,147,483,648 >= x <= 2,147,483,647$ |
-| <span class="flex items-center gap-2 border-lime-500 dark:bg-lime-950/10 text-lime-700 dark:text-lime-300 px-2 py-1 border-l-4">Unsigned 32-bit integer (uint32)</span> | 4 bytes - Range: $0 >= x <= 4,294,967,295$ |
-| <span class="flex items-center gap-2 border-violet-600 dark:bg-violet-950/10 text-violet-700 dark:text-violet-300 px-2 py-1 border-l-4">Signed 64-bit integer (int64)</span> | 8 bytes - Range: $−9,223,372,036,854,775,808 >= x <= 9,223,372,036,854,775,807$ |
-| <span class="flex items-center gap-2 border-pink-500 dark:bg-pink-950/10 text-pink-700 dark:text-pink-300 px-2 py-1 border-l-4">Unsigned 64-bit integer (uint64)</span> | 8 bytes - Range: $0 >= x <= 18,446,744,073,709,551,615$ |
+| <span class="flex items-center gap-2 border-purple-500 dark:bg-purple-950/10 text-purple-700 dark:text-purple-300 px-2 py-1 border-l-4"> Signed 8-bit integer (int8)</span> | 1 byte - Range: $−128 \leq x \leq 127$ |
+| <span class="flex items-center gap-2 border-teal-500 dark:bg-teal-950/10 text-teal-700 dark:text-teal-300 px-2 py-1 border-l-4">Unsigned 8-bit integer (uint8)</span> | 1 byte -  Range: $0 \leq x \leq 255$ |
+| <span class="flex items-center gap-2 border-sky-400 dark:bg-sky-950/10 text-sky-700 dark:text-sky-300 px-2 py-1 border-l-4">Signed 16-bit integer (int16)</span> | 2 bytes - Range: $−32,768 \leq x \leq 32,767$ |
+| <span class="flex items-center gap-2 border-emerald-500 dark:bg-emerald-950/10 text-emerald-700 dark:text-emerald-300 px-2 py-1 border-l-4">Unsigned 16-bit integer (uint16)</span> | 2 bytes - Range: $0 \leq x \leq 65,535$ |
+| <span class="flex items-center gap-2 border-cyan-500 dark:bg-cyan-950/10 text-cyan-700 dark:text-cyan-300 px-2 py-1 border-l-4">Signed 32-bit integer (int32)</span> | 4 bytes - Range: $−2,147,483,648 \leq x \leq 2,147,483,647$ |
+| <span class="flex items-center gap-2 border-lime-500 dark:bg-lime-950/10 text-lime-700 dark:text-lime-300 px-2 py-1 border-l-4">Unsigned 32-bit integer (uint32)</span> | 4 bytes - Range: $0 \leq x \leq 4,294,967,295$ |
+| <span class="flex items-center gap-2 border-violet-600 dark:bg-violet-950/10 text-violet-700 dark:text-violet-300 px-2 py-1 border-l-4">Signed 64-bit integer (int64)</span> | 8 bytes - Range: $−9,223,372,036,854,775,808 \leq x \leq 9,223,372,036,854,775,807$ |
+| <span class="flex items-center gap-2 border-pink-500 dark:bg-pink-950/10 text-pink-700 dark:text-pink-300 px-2 py-1 border-l-4">Unsigned 64-bit integer (uint64)</span> | 8 bytes - Range: $0 \leq x \leq 18,446,744,073,709,551,615$ |
 | <span class="flex items-center gap-2 border-indigo-500 dark:bg-indigo-950/10 text-indigo-700 dark:text-indigo-300 px-2 py-1 border-l-4">Float (32-bit, IEEE 754)</span> | 4 bytes - Represents real numbers (with decimals). |
 | <span class="flex items-center gap-2 border-orange-600 dark:bg-orange-950/10 text-orange-700 dark:text-orange-300 px-2 py-1 border-l-4">Little Endian</span> | Stores the least significant byte first (lowest memory address). Example (32-bit value `0x12345678`): stored as `78 56 34 12`. |
 | <span class="flex items-center gap-2 border-yellow-500 dark:bg-yellow-950/10 text-yellow-700 dark:text-yellow-300 px-2 py-1 border-l-4">Big Endian</span> | Stores the most significant byte first (lowest memory address). Example (32-bit value `0x12345678`): stored as `12 34 56 78`. |
 </div>
 
-### Understanding the relation between Byte Values and Game Values
+### Understanding the Relation Between Byte Values and Game Values
 
-Due to the value displayed in the game, you can rule out certain byte values. For example, if an item has a value that only goes max to 255, you know that is only storing 1 byte (8-bit integer). If it is more, than it uses 2 bytes (16-bit integer). And so on.
-It is a little bit different if it comes to float values. In Dying Light games for example, the durability of a weapon is getting stored as float due to perks, skills and charms that effect durability as well.
+Due to the value displayed in the game, you can rule out certain byte values. For example, if an item has a value that only goes up to 255, you know that it is only storing 1 byte (8-bit integer). If it is more, then it uses 2 bytes (16-bit integer), and so on.
+It is a little bit different when it comes to float values. In Dying Light games, for example, the durability of a weapon is stored as a float due to perks, skills, and charms that affect durability as well.
 
-In Dying Light 2 each item contains 4 important attribute values. **_Level, seed, amount and durability_**. Durability is self explanatory. It represents the durability of a certain item. Amount is also obvious. It represents how much of certain item the player is carrying. The seed is used for generating the stats of an item. Each seed generates a specific stat pattern. The level represents the level of the item. In the game you see levels from 0-13, but it gets stored as a unsigned 16-bit integer.
+In Dying Light 2, each item contains 4 important attribute values: **_Level, seed, amount, and durability_**. Durability is self-explanatory; it represents the durability of a certain item. Amount is also obvious; it represents how much of a certain item the player is carrying. The seed is used for generating the stats of an item. Each seed generates a specific stat pattern. The level represents the level of the item. In the game, you see levels from 0-13, but it is stored as an unsigned 16-bit integer.
 
 <Callout variant="axiom">
-  The Level itself effects the seed. Meaning the same seed does not cause the
-  same result if there are different levels involved.
+    The level itself affects the seed. This means the same seed does not cause the
+    same result if there are different levels involved.
 </Callout>
 
 ## Conclusion
-In the last few chapters we established the foundation on what Save Editing is and what it brings. What data types are being used and how to differentiate them. Building on top of this knowledge I want you to follow me even deeper into the matter. My next subposts will contain detailed examples on where you can find items and attributes, skills and much more. The whole data structure I managed to unravel.
+In the last few chapters, we established the foundation of what save editing is and what it brings, what data types are being used, and how to differentiate them. Building on top of this knowledge, I want you to follow me even deeper into the matter. My next subposts will contain detailed examples on where you can find items and attributes, skills, and much more—the whole data structure I managed to unravel.
 
 ## Special Thanks
 
-But before that I want to address something first. Most of what you are reading is not something I learned by myself. ***@zCaazual*** shared is findings with me and helped me understand what happens inside savefiles. Without him, I would have never managed build what I did.
+But before that, I want to address something first. Most of what you are reading is not something I learned by myself. ***@zCaazual*** shared his findings with me and helped me understand what happens inside save files. Without him, I would have never managed to build what I did.

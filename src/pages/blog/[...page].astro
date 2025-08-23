@@ -6,7 +6,7 @@ import PageHead from '@/components/PageHead.astro'
 import PaginationComponent from '@/components/ui/pagination'
 import { SITE } from '@/consts'
 import Layout from '@/layouts/Layout.astro'
-import { getPostsByAuthor, groupPostsByYear } from '@/lib/data-utils'
+import { getAllPosts, getPostsByAuthor, groupPostsByYear } from '@/lib/data-utils'
 import type { PaginateFunction } from 'astro'
 
 export async function getStaticPaths({
@@ -15,6 +15,7 @@ export async function getStaticPaths({
   paginate: PaginateFunction
 }) {
   const allPosts = await getPostsByAuthor('me')
+//   const allPosts = await getAllPosts()
   return paginate(allPosts, { pageSize: SITE.postsPerPage })
 }
 
