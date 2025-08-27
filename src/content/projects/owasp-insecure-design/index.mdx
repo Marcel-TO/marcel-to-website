@@ -1,0 +1,78 @@
+---
+title: 'OWASP Insecure Design'
+description: 'a demo application regarding the OWASP Top 10 security categories. The main focus of this project regards the category: A04:2021 - Insecure Design'
+tags: ['OWASP', 'Vulnerability']
+link: 'https://github.com/Marcel-TO/OWASP_Insecure_Design'
+image: './banner.png'
+startDate: '2023-04-18'
+endDate: '2024-10-09'
+contributors: ['me']
+---
+
+## What is OWASP Top 10?
+
+OWASP Top 10 refers to a list of the ten most critical web application security risks identified by the Open Web Application Security Project (OWASP). The list is updated every few years to reflect the current state of web application security threats.
+
+The OWASP Top 10 list provides guidance to developers, testers, and security professionals to help them understand the most common and dangerous vulnerabilities that exist in web applications. It is widely used as a benchmark for security testing and as a starting point for securing web applications.
+
+The current version of the OWASP Top 10, released in 2021, includes the following vulnerabilities:
+
+- **A01:2021** - Broken Access Control
+- **A02:2021** - Cryptographic Failures
+- **A03:2021** - Injection
+- **A04:2021** - Insecure Design
+- **A05:2021** - Security Misconfiguration
+- **A06:2021** - Vulnerable and Outdated Components
+- **A07:2021** - Identification and Authentication Failures
+- **A08:2021** - Software and Data Integrity Failures
+- **A09:2021** - Security Logging and Monitoring Failures
+- **A10:2021** - Server-Side Request Forgery
+
+It is important for developers, security professionals, and organizations to be aware of these vulnerabilities and take steps to mitigate them in their web applications. By addressing these vulnerabilities, organizations can better protect themselves and their users from the risks of cyberattacks and data breaches.
+
+For further information about OWASP please click [here](https://owasp.org/Top10/).
+
+### Insecure Design Description
+
+Insecure design is a broad category representing different weaknesses, expressed as “missing or ineffective control design.” Insecure design is not the source for all other Top 10 risk categories. There is a difference between insecure design and insecure implementation. We differentiate between design flaws and implementation defects for a reason, they have different root causes and remediation. A secure design can still have implementation defects leading to vulnerabilities that may be exploited. An insecure design cannot be fixed by a perfect implementation as by definition, needed security controls were never created to defend against specific attacks. One of the factors that contribute to insecure design is the lack of business risk profiling inherent in the software or system being developed, and thus the failure to determine what level of security design is required.[^insecure_design]
+
+[^insecure_design]: [OWASP Top 10: Insecure Design](https://owasp.org/Top10/A04_2021-Insecure_Design/)
+
+## Szenario: Smart-Home Visualization
+
+- Login with username and password
+- A visualization screen in which functions of a smart home can be controlled
+  - for all users
+  - at least 3 Sensors (value display, e.g. actual temperature, status, etc)
+  - at least 3 Actuators (value display, e.g. actual temperature, status, etc)
+- A configuartion screen
+  - different for "normal" and "admin" users
+  - e.g. label for sensors/actuators, Interface Config Mockup, etc. for admins
+  - e.g. name and user profile, etc. for "normal" users
+- A history / log screen
+  - log / listing of revelant activities (e.g. configuration changes, settings, etc.)
+- Assumption: visualization uses a backend for the actual control (e.g. via CLI/ rest-API/etc.)
+
+## Objective
+
+Create a demo application to demonstrate the chosen vulnerability. As described earlier, this specific project focuses on the category [**_A04:2021 - Insecure Design_**](#insecure-design-description).
+
+In general here are some tips to avoid this critical security risk[^insecure_design]:
+
+- Establish and use a secure development lifecycle with AppSec professionals to help evaluate and design security and privacy-related controls
+- Establish and use a library of secure design patterns or paved road ready to use components
+- Use threat modeling for critical authentication, access control, business logic, and key flows
+- Integrate security language and controls into user stories
+- Integrate plausibility checks at each tier of your application (from frontend to backend)
+- Write unit and integration tests to validate that all critical flows are resistant to the threat model. Compile use-cases and misuse-cases for each tier of your application.
+- Segregate tier layers on the system and network layers depending on the exposure and protection needs
+- Segregate tenants robustly by design throughout all tiers
+- Limit resource consumption by user or service
+
+## Project Structure
+
+As most applications, this project is split into three different sections:
+
+- **Backend** (C#)
+- **Database** (MySQL)
+- **Frontend** (Angular / React Framework)

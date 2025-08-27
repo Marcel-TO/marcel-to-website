@@ -1,5 +1,5 @@
 ---
-export const prerender = true;
+export const prerender = true
 import Breadcrumbs from '@/components/Breadcrumbs.astro'
 import PageHead from '@/components/PageHead.astro'
 import ProjectCard from '@/components/ProjectCard.astro'
@@ -21,9 +21,11 @@ export async function getStaticPaths({
 const { page } = Astro.props
 
 const projectsByYear = groupProjectsByYear(page.data)
-const years = Object.keys(projectsByYear).sort(
-  (a, b) => parseInt(b) - parseInt(a)
-)
+const years = Object.keys(projectsByYear).sort((a, b) => {
+  if (a === 'Present') return -1
+  if (b === 'Present') return 1
+  return parseInt(b) - parseInt(a)
+})
 ---
 
 <Layout class="max-w-3xl">

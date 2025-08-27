@@ -1,7 +1,8 @@
 ---
-export const prerender = true;
+export const prerender = true
 import Breadcrumbs from '@/components/Breadcrumbs.astro'
 import Link from '@/components/Link.astro'
+import LinkButton from '@/components/LinkButton.astro'
 import PostNavigation from '@/components/PostNavigation.astro'
 import ProjectHead from '@/components/ProjectHead.astro'
 import SubprojectsHeader from '@/components/SubprojectsHeader.astro'
@@ -128,9 +129,23 @@ const tocSections = await getTOCSectionsProjects(currentProjectId)
           {project.data.title}
         </h1>
 
-        <p class="text-muted-foreground text-xs md:text-xl mb-8">
+        <p class="text-muted-foreground mb-2 text-xs md:text-xl">
           {project.data.description}
         </p>
+
+        {
+          project.data.link && (
+            <LinkButton
+              icon="lucide:code"
+              variant="outline"
+              link={project.data.link}
+              external={true}
+              class="mb-8 text-xs md:text-xl"
+            >
+              View Code Repository
+            </LinkButton>
+          )
+        }
 
         <div
           class="text-muted-foreground divide-border mb-4 flex flex-col items-center justify-center divide-y text-xs sm:flex-row sm:flex-wrap sm:divide-x sm:divide-y-0 sm:text-sm"
@@ -277,7 +292,7 @@ const tocSections = await getTOCSectionsProjects(currentProjectId)
 
           scrollToTopButton.classList.toggle(
             'hidden',
-            window.scrollY <= 300 || isFooterVisible
+            window.scrollY <= 300 || isFooterVisible,
           )
         })
       }

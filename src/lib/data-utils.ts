@@ -32,20 +32,24 @@ export async function getAllProjects(): Promise<CollectionEntry<'projects'>[]> {
   const projects = await getCollection('projects')
   return projects
     .filter((project) => !isSubProject(project.id))
-    .sort(
-      (a, b) =>
-        (b.data.startDate?.valueOf() ?? 0) - (a.data.startDate?.valueOf() ?? 0),
-    )
+    .sort((a, b) => {
+      if (!a.data.endDate && b.data.endDate) return -1
+      if (a.data.endDate && !b.data.endDate) return 1
+      if (!a.data.endDate && !b.data.endDate) return 0
+      return (b.data.endDate?.valueOf() ?? 0) - (a.data.endDate?.valueOf() ?? 0)
+    })
 }
 
 export async function getAllProjectsAndSubProjects(): Promise<
   CollectionEntry<'projects'>[]
 > {
   const projects = await getCollection('projects')
-  return projects.sort(
-    (a, b) =>
-      (b.data.startDate?.valueOf() ?? 0) - (a.data.startDate?.valueOf() ?? 0),
-  )
+  return projects.sort((a, b) => {
+    if (!a.data.endDate && b.data.endDate) return -1
+    if (a.data.endDate && !b.data.endDate) return 1
+    if (!a.data.endDate && !b.data.endDate) return 0
+    return (b.data.endDate?.valueOf() ?? 0) - (a.data.endDate?.valueOf() ?? 0)
+  })
 }
 
 export async function getAllTags(): Promise<Map<string, number>> {
@@ -149,8 +153,7 @@ export async function getAdjacentProjects(currentId: string): Promise<{
       )
       .sort((a, b) => {
         const dateDiff =
-          (a.data.startDate?.valueOf() ?? 0) -
-          (b.data.startDate?.valueOf() ?? 0)
+          (a.data.endDate?.valueOf() ?? -1) - (b.data.endDate?.valueOf() ?? 0)
         if (dateDiff !== 0) return dateDiff
 
         const orderA = a.data.order ?? 0
@@ -309,12 +312,14 @@ export function groupPostsByYear(
 }
 
 export function groupProjectsByYear(
-  posts: CollectionEntry<'projects'>[],
+  projects: CollectionEntry<'projects'>[],
 ): Record<string, CollectionEntry<'projects'>[]> {
-  return posts.reduce(
-    (acc: Record<string, CollectionEntry<'projects'>[]>, post) => {
-      const year = post.data.startDate?.getFullYear().toString() ?? 'undefined'
-      ;(acc[year] ??= []).push(post)
+  return projects.reduce(
+    (acc: Record<string, CollectionEntry<'projects'>[]>, project) => {
+      const year = project.data.endDate
+        ? project.data.endDate.getFullYear().toString()
+        : 'Present'
+      ;(acc[year] ??= []).push(project)
       return acc
     },
     {},
