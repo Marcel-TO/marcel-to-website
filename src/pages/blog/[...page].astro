@@ -1,12 +1,12 @@
 ---
-export const prerender = true;
+export const prerender = true
 import BlogCard from '@/components/BlogCard.astro'
 import Breadcrumbs from '@/components/Breadcrumbs.astro'
 import PageHead from '@/components/PageHead.astro'
 import PaginationComponent from '@/components/ui/pagination'
 import { SITE } from '@/consts'
 import Layout from '@/layouts/Layout.astro'
-import { getAllPosts, getPostsByAuthor, groupPostsByYear } from '@/lib/data-utils'
+import { getAllPosts, groupPostsByYear } from '@/lib/data-utils'
 import type { PaginateFunction } from 'astro'
 
 export async function getStaticPaths({
@@ -14,8 +14,7 @@ export async function getStaticPaths({
 }: {
   paginate: PaginateFunction
 }) {
-  const allPosts = await getPostsByAuthor('me')
-//   const allPosts = await getAllPosts()
+  const allPosts = await getAllPosts()
   return paginate(allPosts, { pageSize: SITE.postsPerPage })
 }
 
