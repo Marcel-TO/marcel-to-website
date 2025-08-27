@@ -114,9 +114,6 @@ export default defineConfig({
   },
   output: 'server',
   adapter: vercel({
-    webAnalytics: {
-      enabled: true,
-    },
     edgeMiddleware: true,
     maxDuration: 8,
   }),
