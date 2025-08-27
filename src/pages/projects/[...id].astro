@@ -137,10 +137,9 @@ const tocSections = await getTOCSectionsProjects(currentProjectId)
           project.data.link && (
             <LinkButton
               icon="lucide:code"
-              variant="outline"
               link={project.data.link}
               external={true}
-              class="mb-8 text-xs md:text-xl"
+              class="mb-8 text-xs md:text-xl border border-primary-foreground/20 bg-background/20 p-2 hover:bg-background/30"
             >
               View Code Repository
             </LinkButton>
