@@ -8,6 +8,7 @@ import Header from '@/components/Header.astro'
 import { SITE } from '@/consts'
 import { cn } from '@/lib/utils'
 import { ClientRouter } from "astro:transitions";
+import Analytics from '@vercel/analytics/astro'
 
 interface Props {
   class?: string
@@ -21,6 +22,7 @@ const { class: className } = Astro.props
   <Head>
     <slot name="head" />
     <ClientRouter />
+    <Analytics />
   </Head>
   <body>
     <div class="flex h-fit min-h-screen flex-col gap-y-6 font-sans">
