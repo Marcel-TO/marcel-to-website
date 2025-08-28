@@ -19,7 +19,7 @@ import { pluginLineNumbers } from '@expressive-code/plugin-line-numbers'
 
 import tailwindcss from '@tailwindcss/vite'
 
-import vercel from '@astrojs/vercel'
+// import vercel from '@astrojs/vercel'
 
 export default defineConfig({
   site: 'https://marcel-to.vercel.app',
@@ -112,9 +112,9 @@ export default defineConfig({
     ],
     remarkPlugins: [remarkMath, remarkEmoji],
   },
-  output: 'server',
-  adapter: vercel({
-    edgeMiddleware: true,
-    isr: true,
-  }),
+//   output: 'server',
+//   adapter: vercel({
+//     edgeMiddleware: true,
+//     isr: true,
+//   }),
 })
