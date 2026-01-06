@@ -1,0 +1,139 @@
+---
+title: 'PQC - Power Query Converter'
+description: 'Automatically convert your PowerQuery scripts to python'
+tags: ['Go', 'Python', 'Power Query']
+link: 'https://github.com/Marcel-TO/PQC-PowerQueryConverter'
+image: './banner.png'
+startDate: '2025-07-01'
+contributors: ['me']
+---
+
+import LinkButton from '@/components/LinkButton.astro'
+import Callout from '@/components/Callout.astro'
+
+A Power Query to Python converter that automatically translates PowerQuery M language scripts into executable Python code. Built with Go, this interpreter parses PowerQuery syntax and generates equivalent Python code, supporting a wide range of PowerQuery functions.
+
+## Overview
+
+PQC-PowerQueryConverter is designed to bridge the gap between Microsoft's Power Query M language and Python, enabling users to convert their data transformation scripts seamlessly. The project implements a complete interpreter pipeline including lexical analysis, parsing, and code generation.
+
+### Features
+
+- **Full Interpreter Pipeline**: Lexer → Parser → Interpreter → Python Code Generation
+- **Extensive Function Support**: Text, Table, Binary, and TypeValue functions
+- **Symbol Table Management**: Tracks variables and manages code generation
+- **Detailed Logging**: Built-in logger for debugging and monitoring conversion process
+- **Test Coverage**: Comprehensive test suites for both Go and Python output validation
+
+### Project Structure
+
+#### `/interpreter`
+
+The heart of the conversion process, containing the complete interpretation pipeline:
+
+- **`/lexer`** - Tokenizes PowerQuery M code into a stream of tokens for parsing
+- **`/parser`** - Builds an Abstract Syntax Tree (AST) from tokens; includes specialized function parsing
+- **`/nodes`** - Defines all AST node types (functions, operators, strings, numbers, tables, etc.)
+- **`/token`** - Token type definitions and token identification logic
+- **`/symboltable`** - Manages variables, generates Python code, and tracks dependencies
+- **`interpreter. go`** - Main interpreter that orchestrates the conversion process
+
+#### `/powerquery`
+
+PowerQuery-specific implementations and type definitions:
+
+- **`/functions`** - Implementation of PowerQuery functions organized by category:
+  - `/binary` - Binary data manipulation functions
+  - `/table` - Table operations and transformations
+  - `/text` - String manipulation functions
+  - `/typevalue` - Type conversion and value creation functions
+- **`/types`** - PowerQuery data type definitions and common types
+- **`/enumerations`** - PowerQuery enumerations (compression types, encodings, comparers, etc.)
+- **`/functiontypes`** - Function type classifications and metadata
+
+#### `/handler`
+
+Utility handlers for common operations:
+
+- **`filehandler.go`** - File I/O operations for reading PowerQuery scripts
+- **`stackhandler.go`** - Stack data structure for expression evaluation
+- **`valuehandler.go`** - Value manipulation and type handling utilities
+
+#### `/logger`
+
+Custom logging implementation with debug, info, and error levels for tracking the conversion process.
+
+#### `/tests`
+
+Go test suite for validating the interpreter:
+
+- **`/examples`** - Sample PowerQuery scripts for testing
+- **`examples_test.go`** - Automated tests for example conversions
+- **`run_function. go`** - Test runner utilities
+
+#### `/python-tests`
+
+Python validation scripts to verify the generated Python code executes correctly:
+
+- Sample Python files demonstrating converted PowerQuery operations
+- Test cases for binary, table, text, and typevalue operations
+- Python environment configuration (`.python-version`, `pyproject.toml`)
+
+### Configuration Files
+
+- **`go.mod`** - Go module dependencies
+- **`main.go`** - CLI entry point that orchestrates the conversion
+- **`LICENSE`** - Project license
+- **`SUPPORTED_FUNCTIONS.md`** - Comprehensive list of supported PowerQuery functions with implementation status
+
+## How It Works
+
+The conversion process follows these steps:
+
+1. **Lexical Analysis**: The lexer reads the input PowerQuery file and converts it into tokens
+2. **Parsing**: The parser constructs an Abstract Syntax Tree (AST) from the token stream
+3. **Interpretation**: The interpreter walks the AST, resolving functions and building the symbol table
+4. **Code Generation**: Python code is generated with proper dependencies and variable assignments
+5. **Output**: The final Python script is produced, ready for execution
+
+## Usage
+
+```bash
+go run main.go <path-to-powerquery-file>
+```
+
+The converter will:
+
+- Read your PowerQuery script
+- Parse and interpret the code
+- Generate equivalent Python code
+- Output the result with detailed logging
+
+## Supported Functions
+
+The project supports a wide range of PowerQuery functions across multiple categories:
+
+### Fully Supported
+
+- **TypeValue Functions**: `#date`, `#datetime`, `#datetimezone`, `#table`
+- **Binary Functions**: 13+ functions including `Binary. Combine`, `Binary.ToText`, `Binary.FromList`
+- **Text Functions**: 40+ functions including `Text.Split`, `Text.Replace`, `Text.Combine`
+- **Table Functions**: Column operations, transformations, and data manipulation
+
+### In Progress
+
+- Additional table transformation functions
+- Advanced table operations (joins, grouping, aggregation)
+
+See [SUPPORTED_FUNCTIONS.md](https://github.com/Marcel-TO/PQC-PowerQueryConverter/blob/main/SUPPORTED_FUNCTIONS.md) for the complete list with detailed descriptions.
+
+## Testing
+
+```bash
+cd tests
+go test -v
+```
+
+---
+
+**Built with Go** | **Generates Python** | **Powered by AST**

@@ -22,7 +22,7 @@ import tailwindcss from '@tailwindcss/vite'
 // import vercel from '@astrojs/vercel'
 
 export default defineConfig({
-  site: 'https://marcel-to.vercel.app',
+  site: 'https://marcel-to.net',
   integrations: [
     expressiveCode({
       themes: ['github-light', 'github-dark'],
