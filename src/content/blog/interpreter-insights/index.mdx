@@ -1,8 +1,8 @@
 ---
 title: 'Interpreter Insights'
-description: 'During my work I '
+description: 'Here is what I learned after writing Interpreters'
 date: 2025-12-30
-tags: ['Interpreter', 'AST', 'Go']
+tags: ['Interpreter', '**AST**', 'Go']
 image: './banner.png'
 authors: ['me']
 ---
@@ -54,11 +54,11 @@ The reason I needed to build an interpreter for Power Query was that I wasn't ju
 
 Interpreters generally work in stages. First you tokenize the source code, parse into a data structure that represents what it means. Then you execute that data structure.
 
-First you have a lexer (Scanner or Tokenizer), which takes the raw text and breaks it into tokens - things like "keyword", "identifier", "number", "operator". Then you have a parser, which takes those tokens and builds a tree structure called an Abstract Syntax Tree, or AST.
+First you have a lexer (Scanner or Tokenizer), which takes the raw text and breaks it into tokens - things like "keyword", "identifier", "number", "operator". Then you have a parser, which takes those tokens and builds a tree structure called an Abstract Syntax Tree, or **AST**.
 
-The AST is a tree because code has structure. When you write `2 + 3 * 4`, that doesn't mean "do these operations left to right." It means "first multiply 3 and 4, then add 2 to the result." The multiplication is a subtree of the addition.
+The **AST** is a tree because code has structure. When you write `2 + 3 * 4`, that doesn't mean "do these operations left to right." It means "first multiply 3 and 4, then add 2 to the result." The multiplication is a subtree of the addition.
 
-Once you have an AST, you can walk through it and execute each node. Or in my case, walk through it and generate Python code that does the same thing.
+Once you have an **AST**, you can walk through it and execute each node. Or in my case, walk through it and generate Python code that does the same thing.
 
 ## Interpreter Foundation
 
@@ -118,7 +118,7 @@ Parsing is what happens after lexing. The lexer turns text into tokens. The pars
 
 Why do we need a tree? As mentioned above in chapter [How Interpreters Work](#how-interpreters-work) code has structure. When you write `2 + 3 * 4`, you don't mean `(2 + 3) * 4`. You mean `2 + (3 * 4)`. The parser's job is to figure out which operations happen first and represent that as a tree where the things that happen first are deeper in the tree.
 
-This tree is called an \***\*AST\*\***, which stands for \***\*abstract syntax tree\*\***. It's abstract because it leaves out details that don't matter. It doesn't remember that you put extra spaces somewhere, or that you used parentheses when you didn't need to. It just remembers the structure.
+This tree is called an \***\***AST**\*\***, which stands for \***\*abstract syntax tree\*\***. It's abstract because it leaves out details that don't matter. It doesn't remember that you put extra spaces somewhere, or that you used parentheses when you didn't need to. It just remembers the structure.
 
 The way parsers work is by following grammar rules. A grammar is basically a specification of what's legal in a language. It says things like "an expression can be a number, or two expressions added together, or two expressions multiplied together." The parser uses these rules to build up the tree.
 
@@ -146,10 +146,44 @@ Some languages are harder to parse than others. Python is notoriously hard to pa
 
 This is one reason new programming languages tend to have simpler syntax than old ones. The designers have learned that making parsing easy makes everything else easier too. If your language is easy to parse, it's easier to write tools for it. Easier to write syntax highlighters, code formatters, and compilers.
 
-Parsing is one of those things that seems complicated when you first encounter it, but becomes simple once you understand it. It's just about converting a sequence into a tree according to rules. The sequences are token streams. The trees are ASTs. The rules are grammars. That's all there is to it.
+Parsing is one of those things that seems complicated when you first encounter it, but becomes simple once you understand it. It's just about converting a sequence into a tree according to rules. The sequences are token streams. The trees are **ASTs**. The rules are grammars. That's all there is to it.
 
-## The Tricky Parts
+### Abstract Syntax Trees (AST)
 
-A tricky thing is that Power Query has its own type system. In Power Query, types aren't just checked at runtime - they're part of the data model. A column can have a type, and that type determines what operations you can do on it. When you convert to Python, you need to preserve that type information, or things that should work won't.
+After you've turned your source code into tokens, you need to figure out what those tokens mean. This is where the Abstract Syntax Tree comes in.
 
-The thing that took me longest to figure out was scoping. Power Query lets you define variables inside queries, and those variables can reference other variables defined earlier in the same query. When you translate this to Python, you need to make sure all the variable definitions end up in the right order, and that they're defined before they're used. This is harder than it sounds because Power Query lets you write queries out of order. The interpreter figures out the dependencies automatically.
+An **AST** is a tree-shaped data structure that represents the structure of your program. Each node in the tree is a piece of syntax - an expression, a statement, a declaration. The tree structure captures how these pieces fit together.
+
+Why is it called abstract you may ask? Because it leaves out details that don't matter for understanding what the program does. Things like parentheses and semicolons are there to help the parser, but once you've parsed the code, you don't need them anymore. The tree just captures the meaning.
+
+Take the expression `(min + max) / 2` (as visualized below). The parentheses tell you to do the addition first. But once you've parsed this into a tree, you don't need the parentheses anymore. The tree itself encodes the order of operations. The division node has two children: the addition node and the number 2. That tells you everything you need to know.
+
+![**AST** Example](./images/ast_example.png)
+
+The tree structure makes relationships explicit. In the text `(min + max) / 2`, the addition is nested inside the division because of the parentheses. In the tree, the addition node is literally a child of the division node. You can see the structure at a glance.
+
+Building an **AST** is a two-step process. First you parse the tokens according to the grammar of your language. Then you build nodes for each syntactic construct you recognize.
+
+The grammar tells you how the pieces fit together. It's a set of rules like "an expression can be a number, or an identifier, or an expression plus an expression." These rules define what's valid syntax and what isn't. And they tell you how to build the tree.
+
+When you parse `var average = (min + max) / 2`, you build a tree with a variable declaration or assignment node at the root. That node has two children: the name "average" and the expression on the right side. The expression is itself a tree, with a division at the root, an addition on the left, and a number on the right.
+
+Once you have an **AST**, you can do things with it. You can walk through it and execute each node. You can transform it to optimize the code. You can analyze it to find bugs. The tree structure makes all of this easier than working with the raw text or even the tokens.
+
+This is why parsers produce **ASTs** rather than just saying "yes, this is valid syntax." The **AST** is the thing you actually want. It's the representation you'll work with for everything that comes after parsing.
+
+**AST** sits between parsing and execution and the interpreter walks through it to run your code. If you're building a compiler, the code generator walks through it to produce machine code. If you're building an optimizer, you transform one **AST** into another, better **AST**.
+
+Different languages have different **ASTs** because they have different syntax. But the basic idea is always the same: a tree that represents the structure of the code, abstracting away the details that don't matter.
+
+When I was building my Power Query to Python converter, getting the **AST** right was crucial. Power Query has some weird syntax. Functions can be defined inline. Records use square brackets. Identifier Strings can start with an `#` and followed by a String value that contains spaces. The let expression lets you define a bunch of variables and then use them in a final expression. All of this has to be represented in the tree.
+
+If the tree structure is wrong, everything downstream breaks. If you represent a let expression as a flat list of assignments instead of a nested structure, you won't get the scoping right. If you don't capture the fact that a function definition is an expression that produces a value, you'll generate the wrong Python code.
+
+The **AST** has to capture not just what the code says, but what it means. And that's harder than it sounds, because the same syntax can mean different things in different contexts. In Power Query, `[x]` can be either a list with one element or a record access, depending on what comes before it. The **AST** has to make that distinction clear.
+
+Building an **AST** by hand is tedious but not complicated. For each kind of syntax in your language, you define a node type. For each rule in your grammar, you write code that builds the right kind of node. Then you wire it all together so that parsing produces a tree.
+
+Most of the time you don't actually build the parser by hand. You use a parser generator, which takes a grammar as input and produces code that parses that grammar. But you still have to design the **AST**, because the parser generator doesn't know what tree structure you want. It just knows how to recognize valid syntax.
+
+The hard part isn't building the tree. It's designing it. You have to decide what nodes you need and how they should be connected. And you have to get this right, because everything else depends on it. If your **AST** doesn't capture the structure of the language accurately, your interpreter won't work.
