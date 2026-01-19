@@ -2,9 +2,12 @@
 import HeroSection from '@/components/HeroSection.astro'
 import PageHead from '@/components/PageHead.astro'
 import Layout from '@/layouts/Layout.astro'
+import  SpeedInsights  from "@vercel/speed-insights/astro"
+
 ---
 
 <Layout>
+    <SpeedInsights />
   <PageHead slot="head" title="Home" />
   <section>
     <HeroSection />
