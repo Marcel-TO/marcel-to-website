@@ -1,0 +1,98 @@
+---
+title: 'Road to Modding Hytale'
+description: 'Follow me on my journey on how I learned the key components of modding Hytale'
+date: 2026-02-23
+tags: ['Java', 'Modding', 'Game Development']
+image: './banner.png'
+authors: ['me']
+---
+
+import Callout from '@/components/Callout.astro'
+
+## Introduction
+
+The best way to learn something is to need it. I've noticed this pattern over and over. You can read documentation all day, but until you actually try to build something, you don't really understand it. A couple days ago I started modding a game called Hytale. I went into it knowing almost nothing. But I had something more valuable than knowledge: I wanted to make something specific work.
+
+<Callout title="What is Hytale" variant="corollary">
+  If you do not know what Hytale is, it's a Minecraft-like game that's currently
+  in Alpha. It has a modding API that lets you create custom content for the
+  game and the Developer Team is extremely supportive. Click
+  [here](https://hytale.com/) to learn more about the game.
+</Callout>
+
+This is how most good learning happens. You don't learn to program by reading a book about programming. You learn by trying to make the computer do something and getting stuck. Then you figure out just enough to get unstuck. Then you get stuck again. People talk about "diving deep" like it's some special technique. But really it just means you kept going when you got stuck. Most people give up at the first obstacle. The ones who succeed are the ones who think "hmm, that's annoying" and then figure out how to get past it.
+
+I probably spent half my time undoing things I'd just done. This felt inefficient at the time, but looking back, those mistakes taught me more than anything else. When something breaks in a weird way, you have to understand how it works to fix it. There's a common pattern here. The best way to learn how something works is to break it. Not intentionally, but that's what ends up happening. You try something, it doesn't work, and in figuring out why, you learn how the system actually behaves, not just how you thought it behaved. The other thing I noticed is how quickly you can pick things up when you're motivated. A couple days isn't very long, but it turns out you can learn a surprising amount in that time if you're actually building something. Not learning in the sense of reading about it, but learning in the sense of being able to do it. I think this is because real learning is procedural, not declarative. It's not about knowing facts, it's about knowing how to do things. And the only way to learn how to do things is to do them.
+
+## Tech Stack
+
+The Game Server Architecture is written in Java. I used to think Java was boring. I'd written a few projects in it before, but it never clicked. It felt like unnecessary ceremony. Why write all that boilerplate when you could just write the actual code?
+
+I will still prefer writing in other languages like Go or Python, but I have to admit that Java is pretty good for this kind of thing. The strong typing and object-oriented design make it easier to manage a large codebase. The modding API is also well-designed and easy to use. I was able to get up and running with it pretty quickly, and the documentation is good enough that I didn't have to spend too much time figuring out how to do things.
+
+## Prerequisites
+
+If you want to follow along, you will need to have Java installed on your computer. You will also need to download the Hytale Modding API. You can find instructions for how to do that [here](https://hytalemodding.dev/en/docs/guides/plugin/setting-up-env). Once you have everything set up, you can start modding!
+
+## Core Concepts
+
+Most games use object-oriented programming with inheritance. An Enemy is a Creature, which is an Entity. You build Hierarchy. But Hytale uses a concept called `Entity Component System` (ECS). The core idea is simple: separate data from behavior. An entity is just an ID. Components hold the data. Systems contain the logic. That's it.
+
+At first this seems overcomplicated. Why not just have a Player object with health and position? Why split it into separate components? The answer is the same reason Java makes more sense at scale: it prevents problems you don't see coming. With inheritance, you eventually get stuck. Say you have a Player class and an NPC class. Now you want some NPCs to be controllable by players. Do you make a new ControllableNPC class? Do you refactor Player? The hierarchy fights you. With ECS, you just add the components you need.
+
+The ECS philosophy is "has a" instead of "is a." A player has a position. Has a health value. Has a network connection. Each piece is independent. You can mix and match them however you want. This makes some things that would be hard in traditional OOP trivial in ECS. Want to add poison to any entity? Make a PoisonComponent. Make a PoisonSystem that processes entities with that component. Done. You didn't have to touch any existing code.
+
+### Store
+
+The Store is where entities live. But entities aren't stored as complete objects. The data is grouped by archetype. All entities with the same set of components get chunked together. This makes iteration fast. If a system needs to process all entities with Position and Velocity components, the data is already grouped.
+
+### Codecs
+
+The Codec system handles saving and loading. Every component needs one. This seems like boilerplate at first. But it means the game can save and load any entity automatically. You don't have to write save logic for each type. BuilderCodec makes creating Codecs less tedious. You define how each field is serialized. You give it a getter and a setter. The identifier string has to be unique and start with an uppercase letter, which is the kind of arbitrary rule that seems annoying until you realize it prevents name collisions.
+
+<Callout title="Read more about it" variant="conjecture">
+  The mentioned concepts are just the tip of the iceberg. There's a lot more to
+  learn about how ECS works in Hytale, and I'm just scratching the surface. For
+  the purpose of this blog, I only wanted to share some of the key components
+  that I found interesting and useful. If you're interested in learning more, I
+  highly recommend checking out Hytale Modding documentation including the
+  following resources:
+
+- [Entity Component
+  System](https://hytalemodding.dev/en/docs/guides/ecs/entity-component-system)
+- [Hytale ECS
+  Theory](https://hytalemodding.dev/en/docs/guides/ecs/hytale-ecs-theory)
+
+</Callout>
+
+## Now let's build something!
+
+As mentioned before, the best way to learn is to build something. So let's do that!
+
+The goal:
+
+- Create a custom item with a custom model and texture
+- Make it craftable in the game
+- Create custom interactions for the item (e.g. right-click to do something)
+- Make the custom data persistant across game sessions
+
+With this goal in mind, we cover the basics for future mods. We learn how to create a custom item, how to make it craftable, how to add interactions, and how to save custom data. This is just the beginning. The possibilities are endless once you understand the core concepts. You can create new mobs, new blocks, new dimensions, new mechanics. The only limit is your imagination (and maybe your coding skills). So let's get started! Step by Step.
+
+### Step 1: Create a Custom Item
+Creating a custom item in Hytale isn't hard, but it's instructive. You start with a folder structure. This might seem tedious, but folder structures aren't arbitrary. They're maps of how the game thinks. The item definition lives on the server side because that's where truth lives. The visual stuff—icons, models, textures—lives in Common because both client and server need to see it.
+
+The interesting thing about the item definition is how much of it is just data. You're not writing code to create an item. You're filling out a form in JSON. This is actually profound. The Hytale developers could have made you write code for everything, but instead they created a declarative system. You say what you want, not how to do it.
+
+Look at the structure:
+
+```json
+{
+  "Id": "My_New_Item",
+  "Icon": "Icons/ItemsGenerated/my_new_item_icon.png",
+  "Model": "Items/my_new_item/model.blockymodel",
+  "Quality": "Common",
+  "MaxStack": 1
+}
+```
+
+That's it. You describe the item and the system handles the rest. It knows how to load icons, render models, manage stacks. You don't have to think about any of that.
