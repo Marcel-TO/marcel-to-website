@@ -126,6 +126,30 @@
   margin-right: calc(50% - 50vw);
 }
 
+/* --- Fixed page frame (device-bezel) geometry, shared by PageFrame + hero --- */
+:root {
+  --pf-frame: 0.75rem;
+  --pf-bar-h: 4.75rem;
+  --pf-win-r: 1.25rem;
+  --pf-logo-x: 3.25rem;
+  --pf-logo-w: 4rem;
+  --pf-logo-h: 6.25rem;
+  --pf-tab-r: 1.1rem;
+  --pf-fillet: 0.85rem;
+}
+@media (min-width: 640px) {
+  :root {
+    --pf-frame: 1rem;
+    --pf-bar-h: 5.25rem;
+    --pf-win-r: 1.75rem;
+    --pf-logo-x: 4.25rem;
+    --pf-logo-w: 4.5rem;
+    --pf-logo-h: 7rem;
+    --pf-tab-r: 1.25rem;
+    --pf-fillet: 1rem;
+  }
+}
+
 /* --- Scroll reveal (driven by IntersectionObserver adding .is-visible) --- */
 [data-reveal] {
   opacity: 0;
@@ -230,6 +254,16 @@
 .animate-text-shimmer {
   background-size: 200% auto;
   animation: text-shimmer 6s ease-in-out infinite;
+}
+
+/* When a wordmark both rises in AND shimmers, run both animations together.
+   (Two single-class rules would otherwise clobber each other's `animation`
+   shorthand, leaving the element stuck at hero-rise's initial opacity: 0.) */
+.hero-rise.animate-text-shimmer {
+  animation:
+    hero-rise 0.9s cubic-bezier(0.22, 1, 0.36, 1) var(--rise-delay, 0ms)
+      forwards,
+    text-shimmer 6s ease-in-out infinite;
 }
 
 /* Respect reduced-motion across the whole redesign */

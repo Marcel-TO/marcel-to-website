@@ -1,8 +1,5 @@
 ---
 import Link from '@/components/Link.astro'
-import ThemeToggle from '@/components/ThemeToggle.astro'
-import MobileMenu from '@/components/ui/mobile-menu'
-import { NAV_LINKS, SITE } from '@/consts'
 import { Icon } from 'astro-icon/components'
 
 interface Props {
@@ -16,243 +13,120 @@ const {
 } = Astro.props
 ---
 
-<section class="hf-shell full-bleed relative overflow-hidden" aria-label="Introduction">
-  {/* ---------- Top toolbar (lives on the black frame) ---------- */}
-  <div class="hf-bar absolute inset-x-0 top-0 z-30 flex items-center justify-between px-6 sm:px-8">
-    {/* spacer under the logo tab */}
-    <div class="hf-logo-space shrink-0"></div>
-
-    <nav class="hidden items-center gap-1 sm:flex">
-      {
-        NAV_LINKS.map((item) => (
-          <Link
-            href={item.href}
-            class="rounded-full px-4 py-1.5 text-sm font-medium text-foreground/60 capitalize transition-colors hover:bg-foreground/10 hover:text-foreground"
-          >
-            {item.label}
-          </Link>
-        ))
-      }
-    </nav>
-
-    <div class="flex items-center gap-2">
-      <div class="hidden sm:block">
-        <ThemeToggle />
-      </div>
-      <!-- <Link
-        href="/about"
-        class="hidden rounded-full bg-[#990033] px-5 py-2 text-sm font-semibold text-white shadow-[0_0_24px_-6px_rgba(153,0,51,0.9)] transition-transform hover:scale-105 sm:inline-flex"
-      >
-        Let's talk
-      </Link> -->
-      <div class="sm:hidden">
-        <MobileMenu client:load />
-      </div>
-    </div>
-  </div>
-
-  {/* ---------- Carved logo tab (protrudes from the bar) ---------- */}
-  <Link
-    href="/"
-    aria-label={SITE.title}
-    class="hf-logo absolute top-0 z-40 flex items-start justify-center"
-  >
-    <Icon name="logo" size={44} class="mt-4 text-foreground sm:mt-5" />
-  </Link>
-  <span class="hf-fillet hf-fillet-l"></span>
-  <span class="hf-fillet hf-fillet-r"></span>
-
-  {/* ---------- Content window ---------- */}
-  <div class="hf-window absolute overflow-hidden">
-    {/* Ambient backdrop */}
-    <div class="pointer-events-none absolute inset-0 z-0">
-      <div class="hero-base absolute inset-0"></div>
-      <div class="hero-grid absolute inset-0 opacity-[0.35]"></div>
-      <div
-        class="ambient-drift absolute -top-1/4 left-1/2 h-[70vh] w-[70vh] -translate-x-1/2 rounded-full blur-[120px]"
-        style="background: radial-gradient(circle, rgba(209,26,77,0.38), transparent 70%);"
-      >
-      </div>
-      <div
-        class="ambient-drift absolute bottom-[-20%] left-[15%] h-[45vh] w-[45vh] rounded-full blur-[120px]"
-        style="background: radial-gradient(circle, rgba(153,0,51,0.30), transparent 70%); animation-delay: -6s;"
-      >
-      </div>
-      <div
-        class="ambient-drift absolute right-[10%] top-[20%] h-[40vh] w-[40vh] rounded-full blur-[120px]"
-        style="background: radial-gradient(circle, rgba(255,77,109,0.20), transparent 70%); animation-delay: -12s;"
-      >
-      </div>
-      <div class="hero-grain absolute inset-0"></div>
-    </div>
-
-    {/* Content */}
-    <div class="relative z-10 flex h-full w-full items-center justify-center">
-      <div class="mx-auto max-w-4xl px-6 text-center">
-        <p
-          class="hero-rise text-mono mb-6 inline-flex items-center gap-2 rounded-full border border-foreground/15 bg-foreground/5 px-4 py-1.5 text-[11px] font-medium tracking-[0.2em] text-foreground/70 uppercase backdrop-blur-sm sm:text-xs"
-          style="--rise-delay: 100ms;"
-        >
-          <span class="relative flex h-2 w-2">
-            <span
-              class="absolute inline-flex h-full w-full animate-ping rounded-full bg-rose-400 opacity-75"
-            ></span>
-            <span class="relative inline-flex h-2 w-2 rounded-full bg-rose-400"
-            ></span>
-          </span>
-          {eyebrow}
-        </p>
-
-        <h1
-          class="mb-6 text-5xl leading-[0.95] font-bold tracking-tight text-foreground sm:text-7xl md:text-8xl"
-        >
-          <span class="hero-rise block" style="--rise-delay: 220ms;">Hi, I'm</span>
-          <span
-            class="hero-rise animate-text-shimmer block bg-linear-to-r from-brand via-brand-strong to-brand-soft bg-clip-text text-transparent"
-            style="--rise-delay: 340ms;"
-          >
-            {role}
-          </span>
-        </h1>
-
-        <p
-          class="hero-rise mx-auto mb-10 max-w-xl text-base leading-relaxed text-balance text-foreground/60 sm:text-lg md:text-xl"
-          style="--rise-delay: 460ms;"
-        >
-          I turn passion into software — building data pipelines, open-source
-          tools and the occasional experiment. This is my corner of the web for
-          projects, writing and ideas.
-        </p>
-
-        <div
-          class="hero-rise flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4"
-          style="--rise-delay: 580ms;"
-        >
-          <Link
-            href="/projects"
-            data-magnetic
-            aria-label="View my work"
-            class="group relative inline-flex w-full items-center justify-center gap-2 overflow-hidden rounded-full bg-[#990033] px-8 py-3.5 text-sm font-semibold text-white shadow-[0_0_30px_-6px_rgba(153,0,51,0.8)] transition-transform duration-300 hover:scale-[1.03] sm:w-auto"
-          >
-            <span
-              class="absolute inset-0 -translate-x-full bg-linear-to-r from-[#c31350] via-[#ff4d6d] to-[#c31350] transition-transform duration-500 group-hover:translate-x-0"
-            ></span>
-            <span class="relative flex items-center gap-2">
-              View my work
-              <Icon
-                name="lucide:arrow-right"
-                class="size-4 transition-transform duration-300 group-hover:translate-x-1"
-              />
-            </span>
-          </Link>
-          <Link
-            href="/blog"
-            data-magnetic
-            aria-label="Read the blog"
-            class="inline-flex w-full items-center justify-center gap-2 rounded-full border border-foreground/20 bg-foreground/5 px-8 py-3.5 text-sm font-semibold text-foreground backdrop-blur-sm transition-all duration-300 hover:border-foreground/40 hover:bg-foreground/10 sm:w-auto"
-          >
-            <Icon name="lucide:book-open" class="size-4" />
-            Read the blog
-          </Link>
-        </div>
-      </div>
-    </div>
-
-    {/* Scroll cue */}
-    <a
-      href="#intro"
-      aria-label="Scroll to content"
-      class="absolute bottom-8 left-1/2 z-10 -translate-x-1/2 text-foreground/40 transition-colors hover:text-foreground/80"
+<section class="hf-hero full-bleed relative overflow-hidden" aria-label="Introduction">
+  {/* Ambient backdrop */}
+  <div class="pointer-events-none absolute inset-0 z-0">
+    <div class="hero-base absolute inset-0"></div>
+    <div class="hero-grid absolute inset-0 opacity-[0.35]"></div>
+    <div
+      class="ambient-drift absolute -top-1/4 left-1/2 h-[70vh] w-[70vh] -translate-x-1/2 rounded-full blur-[120px]"
+      style="background: radial-gradient(circle, rgba(209,26,77,0.38), transparent 70%);"
     >
-      <span class="scroll-cue block">
-        <Icon name="lucide:chevron-down" class="size-6" />
-      </span>
-    </a>
+    </div>
+    <div
+      class="ambient-drift absolute bottom-[-20%] left-[15%] h-[45vh] w-[45vh] rounded-full blur-[120px]"
+      style="background: radial-gradient(circle, rgba(153,0,51,0.30), transparent 70%); animation-delay: -6s;"
+    >
+    </div>
+    <div
+      class="ambient-drift absolute right-[10%] top-[20%] h-[40vh] w-[40vh] rounded-full blur-[120px]"
+      style="background: radial-gradient(circle, rgba(255,77,109,0.20), transparent 70%); animation-delay: -12s;"
+    >
+    </div>
+    <div class="hero-grain absolute inset-0"></div>
   </div>
+
+  {/* Content */}
+  <div class="relative z-10 mx-auto max-w-4xl px-6 text-center">
+    <p
+      class="hero-rise text-mono mb-6 inline-flex items-center gap-2 rounded-full border border-foreground/15 bg-foreground/5 px-4 py-1.5 text-[11px] font-medium tracking-[0.2em] text-foreground/70 uppercase backdrop-blur-sm sm:text-xs"
+      style="--rise-delay: 100ms;"
+    >
+      <span class="relative flex h-2 w-2">
+        <span
+          class="absolute inline-flex h-full w-full animate-ping rounded-full bg-rose-400 opacity-75"
+        ></span>
+        <span class="relative inline-flex h-2 w-2 rounded-full bg-rose-400"></span>
+      </span>
+      {eyebrow}
+    </p>
+
+    <h1
+      class="mb-6 text-5xl leading-[0.95] font-bold tracking-tight text-foreground sm:text-7xl md:text-8xl"
+    >
+      <span class="hero-rise block" style="--rise-delay: 220ms;">Hi, I'm</span>
+      <span
+        class="hero-rise animate-text-shimmer block bg-gradient-to-r from-brand via-brand-strong to-brand-soft bg-clip-text text-transparent"
+        style="--rise-delay: 340ms;"
+      >
+        {role}
+      </span>
+    </h1>
+
+    <p
+      class="hero-rise mx-auto mb-10 max-w-xl text-base leading-relaxed text-balance text-foreground/60 sm:text-lg md:text-xl"
+      style="--rise-delay: 460ms;"
+    >
+      I turn passion into software — building data pipelines, open-source tools
+      and the occasional experiment. This is my corner of the web for projects,
+      writing and ideas.
+    </p>
+
+    <div
+      class="hero-rise flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4"
+      style="--rise-delay: 580ms;"
+    >
+      <Link
+        href="/projects"
+        data-magnetic
+        aria-label="View my work"
+        class="group relative inline-flex w-full items-center justify-center gap-2 overflow-hidden rounded-full bg-[#990033] px-8 py-3.5 text-sm font-semibold text-white shadow-[0_0_30px_-6px_rgba(153,0,51,0.8)] transition-transform duration-300 hover:scale-[1.03] sm:w-auto"
+      >
+        <span
+          class="absolute inset-0 -translate-x-full bg-gradient-to-r from-[#c31350] via-[#ff4d6d] to-[#c31350] transition-transform duration-500 group-hover:translate-x-0"
+        ></span>
+        <span class="relative flex items-center gap-2">
+          View my work
+          <Icon
+            name="lucide:arrow-right"
+            class="size-4 transition-transform duration-300 group-hover:translate-x-1"
+          />
+        </span>
+      </Link>
+      <Link
+        href="/blog"
+        data-magnetic
+        aria-label="Read the blog"
+        class="inline-flex w-full items-center justify-center gap-2 rounded-full border border-foreground/20 bg-foreground/5 px-8 py-3.5 text-sm font-semibold text-foreground backdrop-blur-sm transition-all duration-300 hover:border-foreground/40 hover:bg-foreground/10 sm:w-auto"
+      >
+        <Icon name="lucide:book-open" class="size-4" />
+        Read the blog
+      </Link>
+    </div>
+  </div>
+
+  {/* Scroll cue */}
+  <a
+    href="#intro"
+    aria-label="Scroll to content"
+    class="absolute bottom-8 left-1/2 z-10 -translate-x-1/2 text-foreground/40 transition-colors hover:text-foreground/80"
+  >
+    <span class="scroll-cue block">
+      <Icon name="lucide:chevron-down" class="size-6" />
+    </span>
+  </a>
 </section>
 
 <style>
-  .hf-shell {
-    /* Frame geometry */
-    --bezel: var(--background);
-    --frame: 0.75rem;
-    --bar-h: 4.75rem;
-    --win-r: 1.25rem;
-    --logo-x: 3.25rem;
-    --logo-w: 4rem;
-    --logo-h: 6.25rem; /* bar-h + protrusion */
-    --tab-r: 1.1rem;
-    --fillet: 0.85rem;
-
+  .hf-hero {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     min-height: 100svh;
-    background-color: var(--bezel);
+    /* Push content below the fixed top bar so it centres within the window */
+    padding-top: var(--pf-bar-h);
+    padding-bottom: var(--pf-frame);
     color: var(--foreground);
-  }
-  @media (min-width: 640px) {
-    .hf-shell {
-      --frame: 1rem;
-      --bar-h: 5.25rem;
-      --win-r: 1.75rem;
-      --logo-x: 4.25rem;
-      --logo-w: 4.5rem;
-      --logo-h: 7rem;
-      --tab-r: 1.25rem;
-      --fillet: 1rem;
-    }
-  }
-
-  .hf-bar {
-    height: var(--bar-h);
-  }
-  .hf-logo-space {
-    width: calc(var(--logo-x) + var(--logo-w) - 1.5rem);
-  }
-
-  /* Carved logo tab — protrudes below the bar into the window */
-  .hf-logo {
-    left: var(--logo-x);
-    width: var(--logo-w);
-    height: var(--logo-h);
-    background: var(--bezel);
-    border-bottom-left-radius: var(--tab-r);
-    border-bottom-right-radius: var(--tab-r);
-  }
-
-  /* Inverted-radius fillets connecting the tab sides to the window top edge */
-  .hf-fillet {
-    position: absolute;
-    top: var(--bar-h);
-    width: var(--fillet);
-    height: var(--fillet);
-    z-index: 40;
-  }
-  .hf-fillet-l {
-    left: calc(var(--logo-x) - var(--fillet));
-    background: radial-gradient(
-      circle at bottom left,
-      transparent var(--fillet),
-      var(--bezel) calc(var(--fillet) + 0.5px)
-    );
-  }
-  .hf-fillet-r {
-    left: calc(var(--logo-x) + var(--logo-w));
-    background: radial-gradient(
-      circle at bottom right,
-      transparent var(--fillet),
-      var(--bezel) calc(var(--fillet) + 0.5px)
-    );
-  }
-
-  /* Content window inset within the black frame */
-  .hf-window {
-    top: var(--bar-h);
-    left: var(--frame);
-    right: var(--frame);
-    bottom: var(--frame);
-    border-radius: var(--win-r);
-    box-shadow:
-      inset 0 0 80px color-mix(in oklab, var(--foreground) 10%, transparent),
-      inset 0 1px 0 color-mix(in oklab, var(--foreground) 6%, transparent);
   }
 
   .hero-base {

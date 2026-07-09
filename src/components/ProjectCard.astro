@@ -16,7 +16,7 @@ const contributors = await parseAuthors(project.data.contributors ?? [])
 ---
 
 <div
-  class="rounded-xl border p-4 grayscale-75 backdrop-blur-2xl transition-all duration-200 ease-in-out hover:scale-101 hover:shadow-md hover:grayscale-0"
+  class="group rounded-xl border p-4 bg-secondary/30 backdrop-blur-2xl transition-all duration-200 ease-in-out hover:scale-101 hover:bg-brand/10"
 >
   <Link
     href={`/${project.collection}/${project.id}`}
@@ -30,7 +30,7 @@ const contributors = await parseAuthors(project.data.contributors ?? [])
             alt={project.data.title}
             width={1200}
             height={630}
-            class="object-cover"
+            class="object-cover inset-0 h-full w-full opacity-45 grayscale transition-all duration-500 group-hover:opacity-60 group-hover:grayscale-0"
             transition:name={`project-transition/${project.id}`}
           />
         </div>

@@ -5,13 +5,16 @@ import HomeCTA from '@/components/home/HomeCTA.astro'
 import IdentityStrip from '@/components/home/IdentityStrip.astro'
 import LatestWriting from '@/components/home/LatestWriting.astro'
 import Marquee from '@/components/home/Marquee.astro'
+import PageFrame from '@/components/home/PageFrame.astro'
 import Reveal from '@/components/home/Reveal.astro'
 import PageHead from '@/components/PageHead.astro'
 import Layout from '@/layouts/Layout.astro'
 ---
 
-<Layout class="gap-y-0 px-0" hideHeader>
+<Layout class="gap-y-0 px-[calc(var(--pf-frame)+0.75rem)]" hideHeader>
   <PageHead slot="head" title="Home" />
+
+  <PageFrame />
 
   <HeroFrame />
   <Marquee />

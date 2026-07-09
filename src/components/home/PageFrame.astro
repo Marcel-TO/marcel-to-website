@@ -1,0 +1,143 @@
+---
+import Link from '@/components/Link.astro'
+import ThemeToggle from '@/components/ThemeToggle.astro'
+import MobileMenu from '@/components/ui/mobile-menu'
+import { NAV_LINKS, SITE } from '@/consts'
+import { Icon } from 'astro-icon/components'
+---
+
+<div class="page-frame">
+  {/* ---------- Bezel matte with rounded window cut-out ---------- */}
+  <div class="pf-hole" aria-hidden="true"></div>
+
+  {/* ---------- Carved logo tab (left) ---------- */}
+  <Link
+    href="/"
+    aria-label={SITE.title}
+    class="pf-tab pf-tab-logo"
+  >
+    <Icon name="logo" size={40} class="text-foreground" />
+  </Link>
+
+  {/* ---------- Carved nav tab (center) ---------- */}
+  <nav class="pf-tab pf-tab-nav" aria-label="Primary">
+    {
+      NAV_LINKS.map((item) => (
+        <Link
+          href={item.href}
+          class="rounded-full px-3.5 py-1.5 text-sm font-medium text-foreground/60 capitalize transition-colors hover:bg-foreground/10 hover:text-foreground"
+        >
+          {item.label}
+        </Link>
+      ))
+    }
+  </nav>
+
+  {/* ---------- Carved actions tab (right) ---------- */}
+  <div class="pf-tab pf-tab-actions">
+    <div class="hidden sm:block">
+      <ThemeToggle />
+    </div>
+    <div class="sm:hidden">
+      <MobileMenu client:load />
+    </div>
+  </div>
+</div>
+
+<style>
+  .page-frame {
+    --bezel: var(--background);
+  }
+
+  /* Bezel: an opaque matte filling everything AROUND a rounded window.
+     The element itself is transparent (content shows through); the huge
+     spread box-shadow paints the frame region, honouring the radius so the
+     inner window corners are automatically rounded. */
+  .pf-hole {
+    position: fixed;
+    top: var(--pf-bar-h);
+    left: var(--pf-frame);
+    right: var(--pf-frame);
+    bottom: var(--pf-frame);
+    border-radius: var(--pf-win-r);
+    box-shadow:
+      0 0 0 50vmax var(--bezel),
+      inset 0 0 0 1.5px color-mix(in oklab, var(--foreground) 22%, transparent),
+      inset 0 0 0 3px color-mix(in oklab, var(--background) 60%, transparent),
+      inset 0 0 60px color-mix(in oklab, var(--foreground) 6%, transparent);
+    pointer-events: none;
+    z-index: 60;
+  }
+
+  /* ---------- Generic carved tab ---------- */
+  .pf-tab {
+    position: fixed;
+    top: 0;
+    height: var(--pf-logo-h);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* Push content up so it centres within the top bar, leaving the
+       protrusion below the bar as the carved tab shape. */
+    padding-bottom: calc(var(--pf-logo-h) - var(--pf-bar-h));
+    background: var(--bezel);
+    border-bottom-left-radius: var(--pf-tab-r);
+    border-bottom-right-radius: var(--pf-tab-r);
+    box-sizing: border-box;
+    z-index: 62;
+  }
+
+  /* Inverted-radius fillets that blend each tab side into the window's
+     top edge. Anchored to the tab's own edges, so they track any width. */
+  .pf-tab::before,
+  .pf-tab::after {
+    content: '';
+    position: absolute;
+    top: var(--pf-bar-h);
+    width: var(--pf-fillet);
+    height: var(--pf-fillet);
+  }
+  .pf-tab::before {
+    left: calc(-1 * var(--pf-fillet));
+    background: radial-gradient(
+      circle at bottom left,
+      transparent var(--pf-fillet),
+      var(--bezel) calc(var(--pf-fillet) + 0.5px)
+    );
+  }
+  .pf-tab::after {
+    left: 100%;
+    background: radial-gradient(
+      circle at bottom right,
+      transparent var(--pf-fillet),
+      var(--bezel) calc(var(--pf-fillet) + 0.5px)
+    );
+  }
+
+  /* Left — logo */
+  .pf-tab-logo {
+    left: var(--pf-logo-x);
+    width: var(--pf-logo-w);
+  }
+
+  /* Center — navigation (hidden on mobile) */
+  .pf-tab-nav {
+    left: 50%;
+    transform: translateX(-50%);
+    display: none;
+    gap: 0.25rem;
+    padding-inline: 0.6rem;
+  }
+  @media (min-width: 640px) {
+    .pf-tab-nav {
+      display: flex;
+    }
+  }
+
+  /* Right — theme toggle / mobile menu */
+  .pf-tab-actions {
+    right: var(--pf-logo-x);
+    gap: 0.5rem;
+    padding-inline: 0.85rem;
+  }
+</style>
