@@ -13,9 +13,10 @@ import  SpeedInsights  from "@vercel/speed-insights/astro"
 
 interface Props {
   class?: string
+  hideHeader?: boolean
 }
 
-const { class: className } = Astro.props
+const { class: className, hideHeader = false } = Astro.props
 ---
 
 <!doctype html>
@@ -28,13 +29,15 @@ const { class: className } = Astro.props
   </Head>
   <body>
     <div class="flex h-fit min-h-screen flex-col gap-y-6 font-sans">
-      <div
-        class="sticky top-0 z-50 divide-y backdrop-blur-sm xl:divide-none"
-      >
-        <Header />
-        <slot name="subposts-navigation" />
-        <slot name="table-of-contents" />
-      </div>
+      {
+        !hideHeader && (
+          <div class="sticky top-0 z-50 divide-y backdrop-blur-sm xl:divide-none">
+            <Header />
+            <slot name="subposts-navigation" />
+            <slot name="table-of-contents" />
+          </div>
+        )
+      }
       <main class="grow">
         <div class={cn('mx-auto flex grow flex-col gap-y-6 px-4', className)}>
           <slot />

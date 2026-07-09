@@ -1,0 +1,45 @@
+---
+import { getSortedTags } from '@/lib/data-utils'
+import { Icon } from 'astro-icon/components'
+
+const tags = (await getSortedTags()).slice(0, 8).map((t) => t.tag)
+
+const stack = [
+  'Python',
+  'TypeScript',
+  'Rust',
+  'Azure',
+  'Docker',
+  'React',
+  'Astro',
+  'SQL',
+  'Kubernetes',
+  'Go',
+]
+
+// Interleave stack + tags for variety, then dedupe
+const items = Array.from(new Set([...stack, ...tags]))
+---
+
+<div
+  class="full-bleed marquee-mask border-border/60 relative flex overflow-hidden border-y py-4 select-none"
+  aria-hidden="true"
+>
+  {
+    [0, 1].map(() => (
+      <div class="marquee-track flex shrink-0 items-center gap-8 pr-8">
+        {items.map((item) => (
+          <span class="flex items-center gap-8">
+            <span class="text-muted-foreground/80 text-sm font-medium tracking-wide whitespace-nowrap uppercase">
+              {item}
+            </span>
+            <Icon
+              name="lucide:asterisk"
+              class="size-4 text-brand/50"
+            />
+          </span>
+        ))}
+      </div>
+    ))
+  }
+</div>

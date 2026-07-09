@@ -35,6 +35,12 @@
   --color-ring: var(--ring);
 
   --color-background-gradient: var(--background-gradient);
+
+  /* Brand — anchored on #990033 (deep crimson) */
+  --color-brand: var(--brand);
+  --color-brand-strong: var(--brand-strong);
+  --color-brand-soft: var(--brand-soft);
+  --color-brand-foreground: var(--brand-foreground);
 }
 
 @font-face {
@@ -58,33 +64,45 @@
   --foreground: oklch(0.145 0 0);
   --primary-foreground: oklch(0.205 0 0);
   --primary: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
+  --secondary: oklch(0.97 0.012 12);
   --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.97 0.008 12);
+  --muted-foreground: oklch(0.5 0.03 8);
+  --accent: oklch(0.945 0.03 8);
+  --accent-foreground: oklch(0.35 0.14 6);
   --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
+  --border: oklch(0.9 0.02 10);
+  --ring: oklch(0.45 0.17 6);
   --background-gradient: oklch(100% 0.00011 271.152);
+
+  /* Brand palette (#990033 family) */
+  --brand: #990033;
+  --brand-strong: #b81a4a;
+  --brand-soft: #e0466e;
+  --brand-foreground: oklch(0.985 0 0);
 }
 
 [data-theme='dark'] {
-  --background: oklch(23.762% 0.03057 292.504);
+  --background: oklch(20.5% 0.035 8);
   --foreground: oklch(0.985 0 0);
   --primary: oklch(0.205 0 0);
   --primary-foreground: oklch(0.922 0 0);
-  --secondary: oklch(26.322% 0.03167 292.159);
+  --secondary: oklch(24.5% 0.04 8);
   --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(26.322% 0.03167 292.159);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(29.458% 0.06256 291.26);
+  --muted: oklch(24.5% 0.04 8);
+  --muted-foreground: oklch(0.72 0.03 10);
+  --accent: oklch(30% 0.08 8);
   --accent-foreground: oklch(0.985 0 0);
   --destructive: oklch(0.704 0.191 22.216);
   --border: oklch(1 0 0 / 10%);
-  --ring: oklch(0.556 0 0);
-  --background-gradient: oklch(26.322% 0.03167 292.159);
+  --ring: oklch(0.65 0.19 8);
+  --background-gradient: oklch(25% 0.05 8);
+
+  /* Brand palette (#990033 family) — brightened for dark surfaces */
+  --brand: #d11a4d;
+  --brand-strong: #ff4d6d;
+  --brand-soft: #ff8fa3;
+  --brand-foreground: oklch(0.985 0 0);
 }
 
 @layer base {
@@ -94,5 +112,139 @@
   ::backdrop,
   ::file-selector-button {
     @apply border-border outline-ring/50 tracking-tight;
+  }
+}
+
+/* =====================================================================
+   Homepage redesign — reusable motion & layout utilities
+   ===================================================================== */
+
+/* Full-bleed breakout of a padded parent container */
+.full-bleed {
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
+}
+
+/* --- Scroll reveal (driven by IntersectionObserver adding .is-visible) --- */
+[data-reveal] {
+  opacity: 0;
+  transform: translateY(28px);
+  transition:
+    opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  transition-delay: var(--reveal-delay, 0ms);
+  will-change: opacity, transform;
+}
+[data-reveal].is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+/* --- Marquee ticker --- */
+@keyframes marquee-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+.marquee-track {
+  animation: marquee-scroll var(--marquee-duration, 40s) linear infinite;
+}
+.marquee-mask {
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent,
+    #000 12%,
+    #000 88%,
+    transparent
+  );
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    #000 12%,
+    #000 88%,
+    transparent
+  );
+}
+
+/* --- Hero intro reveal --- */
+@keyframes hero-rise {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.hero-rise {
+  opacity: 0;
+  animation: hero-rise 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation-delay: var(--rise-delay, 0ms);
+}
+
+/* --- Slow ambient drift for hero backdrop --- */
+@keyframes ambient-drift {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(0, -3%, 0) scale(1.06);
+  }
+}
+.ambient-drift {
+  animation: ambient-drift 18s ease-in-out infinite;
+}
+
+/* --- Scroll cue bounce --- */
+@keyframes scroll-cue {
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.4;
+  }
+  50% {
+    transform: translateY(6px);
+    opacity: 1;
+  }
+}
+.scroll-cue {
+  animation: scroll-cue 1.8s ease-in-out infinite;
+}
+
+/* --- Shimmering gradient text --- */
+@keyframes text-shimmer {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+.animate-text-shimmer {
+  background-size: 200% auto;
+  animation: text-shimmer 6s ease-in-out infinite;
+}
+
+/* Respect reduced-motion across the whole redesign */
+@media (prefers-reduced-motion: reduce) {
+  [data-reveal],
+  .hero-rise {
+    opacity: 1 !important;
+    transform: none !important;
+    animation: none !important;
+    transition: none !important;
+  }
+  .marquee-track,
+  .ambient-drift,
+  .scroll-cue,
+  .animate-text-shimmer {
+    animation: none !important;
   }
 }

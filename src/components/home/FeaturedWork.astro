@@ -1,0 +1,109 @@
+---
+import Link from '@/components/Link.astro'
+import { Badge } from '@/components/ui/badge'
+import { getRecentProjects } from '@/lib/data-utils'
+import { formatDate } from '@/lib/utils'
+import { Icon } from 'astro-icon/components'
+import { Image } from 'astro:assets'
+
+const projects = await getRecentProjects(4)
+---
+
+{
+  projects.length > 0 && (
+    <section class="mx-auto w-full max-w-5xl px-4 py-20 sm:py-24">
+      <div
+        class="mb-12 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between"
+        data-reveal
+      >
+        <div>
+          <p class="text-brand mb-3 text-xs font-semibold tracking-[0.25em] uppercase">
+            Selected work
+          </p>
+          <h2 class="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl">
+            Featured projects
+          </h2>
+        </div>
+        <Link
+          href="/projects"
+          class="group text-muted-foreground hover:text-brand inline-flex items-center gap-1.5 text-sm font-medium transition-colors"
+        >
+          View all projects
+          <Icon
+            name="lucide:arrow-right"
+            class="size-4 transition-transform duration-300 group-hover:translate-x-1"
+          />
+        </Link>
+      </div>
+
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:auto-rows-[15rem]">
+        {projects.map((project, i) => {
+          const featured = i === 0
+          return (
+            <Link
+              href={`/${project.collection}/${project.id}`}
+              class={`group border-border bg-secondary/30 hover:border-brand/40 relative flex flex-col justify-end overflow-hidden rounded-2xl border transition-all duration-300 hover:-translate-y-1 hover:shadow-xl ${
+                featured
+                  ? 'lg:col-span-2 lg:row-span-2 min-h-[20rem] lg:min-h-0'
+                  : 'min-h-[15rem]'
+              }`}
+              data-reveal
+              style={`--reveal-delay: ${i * 80}ms;`}
+            >
+              {project.data.image ? (
+                <Image
+                  src={project.data.image}
+                  alt={project.data.title}
+                  width={1200}
+                  height={630}
+                  class="absolute inset-0 h-full w-full object-cover opacity-45 grayscale transition-all duration-500 group-hover:scale-105 group-hover:opacity-60 group-hover:grayscale-0"
+                />
+              ) : (
+                <div class="from-brand/25 via-brand/5 absolute inset-0 bg-gradient-to-br to-transparent" />
+              )}
+
+              <div class="from-background/95 via-background/70 absolute inset-0 bg-gradient-to-t to-transparent" />
+
+              <div class="relative z-10 p-6">
+                <div class="text-muted-foreground mb-2 flex items-center gap-1.5 text-xs">
+                  <Icon name="lucide:calendar" class="size-3" />
+                  {project.data.startDate && (
+                    <span>
+                      {formatDate(project.data.startDate)}
+                      {project.data.endDate
+                        ? ` → ${formatDate(project.data.endDate)}`
+                        : ' → Present'}
+                    </span>
+                  )}
+                </div>
+                <h3
+                  class={`mb-1.5 font-bold tracking-tight ${featured ? 'text-2xl sm:text-3xl' : 'text-lg'}`}
+                >
+                  {project.data.title}
+                </h3>
+                <p
+                  class={`text-muted-foreground text-sm leading-relaxed ${featured ? 'line-clamp-3 max-w-lg' : 'line-clamp-2'}`}
+                >
+                  {project.data.description}
+                </p>
+                {project.data.tags && (
+                  <div class="mt-3 flex flex-wrap gap-1.5">
+                    {project.data.tags.slice(0, featured ? 5 : 2).map((tag) => (
+                      <Badge variant="outline" className="text-xs">
+                        {tag}
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div class="bg-brand text-brand-foreground absolute right-4 top-4 z-10 flex size-9 items-center justify-center rounded-full opacity-0 transition-all duration-300 group-hover:opacity-100">
+                <Icon name="lucide:arrow-up-right" class="size-4" />
+              </div>
+            </Link>
+          )
+        })}
+      </div>
+    </section>
+  )
+}

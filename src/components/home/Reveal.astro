@@ -1,0 +1,33 @@
+---
+// Scroll-reveal: adds `.is-visible` to [data-reveal] elements as they enter view.
+---
+
+<script>
+  function initReveal() {
+    const els = document.querySelectorAll<HTMLElement>('[data-reveal]')
+    if (!els.length) return
+
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    if (reduce) {
+      els.forEach((el) => el.classList.add('is-visible'))
+      return
+    }
+
+    const observer = new IntersectionObserver(
+      (entries, obs) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible')
+            obs.unobserve(entry.target)
+          }
+        })
+      },
+      { threshold: 0.12, rootMargin: '0px 0px -8% 0px' },
+    )
+
+    els.forEach((el) => observer.observe(el))
+  }
+
+  initReveal()
+  document.addEventListener('astro:page-load', initReveal)
+</script>
