@@ -7,13 +7,14 @@ interface Props {
   role?: string
 }
 
-const {
-  eyebrow = 'Data Engineer · Developer · Creator',
-  role = 'Marcel-TO',
-} = Astro.props
+const { eyebrow = 'Data Engineer · Developer · Creator', role = 'Marcel-TO' } =
+  Astro.props
 ---
 
-<section class="hf-hero full-bleed relative overflow-hidden" aria-label="Introduction">
+<section
+  class="hf-hero full-bleed relative overflow-hidden"
+  aria-label="Introduction"
+>
   {/* Ambient backdrop */}
   <div class="pointer-events-none absolute inset-0 z-0">
     <div class="hero-base absolute inset-0"></div>
@@ -29,7 +30,7 @@ const {
     >
     </div>
     <div
-      class="ambient-drift absolute right-[10%] top-[20%] h-[40vh] w-[40vh] rounded-full blur-[120px]"
+      class="ambient-drift absolute top-[20%] right-[10%] h-[40vh] w-[40vh] rounded-full blur-[120px]"
       style="background: radial-gradient(circle, rgba(255,77,109,0.20), transparent 70%); animation-delay: -12s;"
     >
     </div>
@@ -39,24 +40,25 @@ const {
   {/* Content */}
   <div class="relative z-10 mx-auto max-w-4xl px-6 text-center">
     <p
-      class="hero-rise text-mono mb-6 inline-flex items-center gap-2 rounded-full border border-foreground/15 bg-foreground/5 px-4 py-1.5 text-[11px] font-medium tracking-[0.2em] text-foreground/70 uppercase backdrop-blur-sm sm:text-xs"
+      class="hero-rise text-mono border-foreground/15 bg-foreground/5 text-foreground/70 mb-6 inline-flex items-center gap-2 rounded-full border px-4 py-1.5 text-[11px] font-medium tracking-[0.2em] uppercase backdrop-blur-sm sm:text-xs"
       style="--rise-delay: 100ms;"
     >
       <span class="relative flex h-2 w-2">
         <span
           class="absolute inline-flex h-full w-full animate-ping rounded-full bg-rose-400 opacity-75"
         ></span>
-        <span class="relative inline-flex h-2 w-2 rounded-full bg-rose-400"></span>
+        <span class="relative inline-flex h-2 w-2 rounded-full bg-rose-400"
+        ></span>
       </span>
       {eyebrow}
     </p>
 
     <h1
-      class="mb-6 text-5xl leading-[0.95] font-bold tracking-tight text-foreground sm:text-7xl md:text-8xl"
+      class="text-foreground mb-6 text-5xl leading-[0.95] font-bold tracking-tight sm:text-7xl md:text-8xl"
     >
       <span class="hero-rise block" style="--rise-delay: 220ms;">Hi, I'm</span>
       <span
-        class="hero-rise animate-text-shimmer block bg-gradient-to-r from-brand via-brand-strong to-brand-soft bg-clip-text text-transparent"
+        class="hero-rise animate-text-shimmer from-brand via-brand-strong to-brand-soft block bg-linear-to-r bg-clip-text text-transparent"
         style="--rise-delay: 340ms;"
       >
         {role}
@@ -64,10 +66,10 @@ const {
     </h1>
 
     <p
-      class="hero-rise mx-auto mb-10 max-w-xl text-base leading-relaxed text-balance text-foreground/60 sm:text-lg md:text-xl"
+      class="hero-rise text-foreground/60 mx-auto mb-10 max-w-xl text-base leading-relaxed text-balance sm:text-lg md:text-xl"
       style="--rise-delay: 460ms;"
     >
-      I turn passion into software — building data pipelines, open-source tools
+      I turn passion into software - building data pipelines, open-source tools
       and the occasional experiment. This is my corner of the web for projects,
       writing and ideas.
     </p>
@@ -83,7 +85,7 @@ const {
         class="group relative inline-flex w-full items-center justify-center gap-2 overflow-hidden rounded-full bg-[#990033] px-8 py-3.5 text-sm font-semibold text-white shadow-[0_0_30px_-6px_rgba(153,0,51,0.8)] transition-transform duration-300 hover:scale-[1.03] sm:w-auto"
       >
         <span
-          class="absolute inset-0 -translate-x-full bg-gradient-to-r from-[#c31350] via-[#ff4d6d] to-[#c31350] transition-transform duration-500 group-hover:translate-x-0"
+          class="absolute inset-0 -translate-x-full bg-linear-to-r from-[#c31350] via-[#ff4d6d] to-[#c31350] transition-transform duration-500 group-hover:translate-x-0"
         ></span>
         <span class="relative flex items-center gap-2">
           View my work
@@ -97,7 +99,7 @@ const {
         href="/blog"
         data-magnetic
         aria-label="Read the blog"
-        class="inline-flex w-full items-center justify-center gap-2 rounded-full border border-foreground/20 bg-foreground/5 px-8 py-3.5 text-sm font-semibold text-foreground backdrop-blur-sm transition-all duration-300 hover:border-foreground/40 hover:bg-foreground/10 sm:w-auto"
+        class="border-foreground/20 bg-foreground/5 text-foreground hover:border-foreground/40 hover:bg-foreground/10 inline-flex w-full items-center justify-center gap-2 rounded-full border px-8 py-3.5 text-sm font-semibold backdrop-blur-sm transition-all duration-300 sm:w-auto"
       >
         <Icon name="lucide:book-open" class="size-4" />
         Read the blog
@@ -109,7 +111,7 @@ const {
   <a
     href="#intro"
     aria-label="Scroll to content"
-    class="absolute bottom-8 left-1/2 z-10 -translate-x-1/2 text-foreground/40 transition-colors hover:text-foreground/80"
+    class="text-foreground/40 hover:text-foreground/80 absolute bottom-8 left-1/2 z-10 -translate-x-1/2 transition-colors"
   >
     <span class="scroll-cue block">
       <Icon name="lucide:chevron-down" class="size-6" />
@@ -141,9 +143,9 @@ const {
   .hero-grid {
     background-image:
       linear-gradient(
-          color-mix(in oklab, var(--foreground) 6%, transparent) 1px,
-          transparent 1px
-        ),
+        color-mix(in oklab, var(--foreground) 6%, transparent) 1px,
+        transparent 1px
+      ),
       linear-gradient(
         90deg,
         color-mix(in oklab, var(--foreground) 6%, transparent) 1px,

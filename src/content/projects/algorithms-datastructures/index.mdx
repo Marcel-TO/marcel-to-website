@@ -198,7 +198,7 @@ To generate hexagon’s you need to work with axial coordinates (q, r, s).
 
 ### Wilson’s Maze Algorithm
 
-> Wilson’s algorithm uses [loop-erased random walks](http://en.wikipedia.org/wiki/Loop-erased_random_walk) to generate a uniform [spanning tree](http://en.wikipedia.org/wiki/Spanning_tree) — an unbiased sample of all possible spanning trees. Most other maze generation algorithms, such as [Prim’s](https://bl.ocks.org/mbostock/11159599), [random traversal](https://bl.ocks.org/mbostock/70a28267db0354261476) and [randomized depth-first traversal](https://bl.ocks.org/mbostock/1ef3b1fb9eb35ca8ffff), do not have this beautiful property.
+> Wilson’s algorithm uses [loop-erased random walks](http://en.wikipedia.org/wiki/Loop-erased_random_walk) to generate a uniform [spanning tree](http://en.wikipedia.org/wiki/Spanning_tree) - an unbiased sample of all possible spanning trees. Most other maze generation algorithms, such as [Prim’s](https://bl.ocks.org/mbostock/11159599), [random traversal](https://bl.ocks.org/mbostock/70a28267db0354261476) and [randomized depth-first traversal](https://bl.ocks.org/mbostock/1ef3b1fb9eb35ca8ffff), do not have this beautiful property.
 >
 > The algorithm initializes the maze with an arbitrary starting cell. Then, a new cell is added to the maze, initiating a random walk (shown in magenta). The random walk continues until it reconnects with the existing maze (shown in white). However, if the random walk intersects itself, the resulting loop is erased before the random walk continues.
 >

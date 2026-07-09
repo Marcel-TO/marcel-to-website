@@ -36,7 +36,7 @@
 
   --color-background-gradient: var(--background-gradient);
 
-  /* Brand — anchored on #990033 (deep crimson) */
+  /* Brand - anchored on #990033 (deep crimson) */
   --color-brand: var(--brand);
   --color-brand-strong: var(--brand-strong);
   --color-brand-soft: var(--brand-soft);
@@ -98,7 +98,7 @@
   --ring: oklch(0.65 0.19 8);
   --background-gradient: oklch(25% 0.05 8);
 
-  /* Brand palette (#990033 family) — brightened for dark surfaces */
+  /* Brand palette (#990033 family) - brightened for dark surfaces */
   --brand: #d11a4d;
   --brand-strong: #ff4d6d;
   --brand-soft: #ff8fa3;
@@ -116,7 +116,7 @@
 }
 
 /* =====================================================================
-   Homepage redesign — reusable motion & layout utilities
+   Homepage redesign - reusable motion & layout utilities
    ===================================================================== */
 
 /* Full-bleed breakout of a padded parent container */

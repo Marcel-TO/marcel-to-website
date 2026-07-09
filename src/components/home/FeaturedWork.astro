@@ -36,7 +36,7 @@ const projects = await getRecentProjects(4)
         </Link>
       </div>
 
-      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:auto-rows-[15rem]">
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:auto-rows-[15rem] lg:grid-cols-3">
         {projects.map((project, i) => {
           const featured = i === 0
           return (
@@ -44,7 +44,7 @@ const projects = await getRecentProjects(4)
               href={`/${project.collection}/${project.id}`}
               class={`group border-border bg-secondary/30 hover:border-brand/40 relative flex flex-col justify-end overflow-hidden rounded-2xl border transition-all duration-300 hover:-translate-y-1 hover:shadow-xl ${
                 featured
-                  ? 'lg:col-span-2 lg:row-span-2 min-h-[20rem] lg:min-h-0'
+                  ? 'min-h-[20rem] lg:col-span-2 lg:row-span-2 lg:min-h-0'
                   : 'min-h-[15rem]'
               }`}
               data-reveal
@@ -57,6 +57,7 @@ const projects = await getRecentProjects(4)
                   width={1200}
                   height={630}
                   class="absolute inset-0 h-full w-full object-cover opacity-45 grayscale transition-all duration-500 group-hover:scale-105 group-hover:opacity-60 group-hover:grayscale-0"
+                  transition:name={`project-transition/${project.id}`}
                 />
               ) : (
                 <div class="from-brand/25 via-brand/5 absolute inset-0 bg-linear-to-br to-transparent" />
@@ -97,7 +98,7 @@ const projects = await getRecentProjects(4)
                 )}
               </div>
 
-              <div class="bg-brand text-brand-foreground absolute right-4 top-4 z-10 flex size-9 items-center justify-center rounded-full opacity-0 transition-all duration-300 group-hover:opacity-100">
+              <div class="bg-brand text-brand-foreground absolute top-4 right-4 z-10 flex size-9 items-center justify-center rounded-full opacity-0 transition-all duration-300 group-hover:opacity-100">
                 <Icon name="lucide:arrow-up-right" class="size-4" />
               </div>
             </Link>

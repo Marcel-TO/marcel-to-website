@@ -15,7 +15,7 @@ const facets = [
   {
     icon: 'lucide:gamepad-2',
     title: 'Gamer',
-    desc: 'From chess to the latest titles — always up for a challenge.',
+    desc: 'From chess to the latest titles - always up for a challenge.',
   },
   {
     icon: 'lucide:guitar',
@@ -25,19 +25,28 @@ const facets = [
 ]
 ---
 
-<section id="intro" class="mx-auto w-full max-w-5xl scroll-mt-24 px-4 py-20 sm:py-28">
+<section
+  id="intro"
+  class="mx-auto w-full max-w-5xl scroll-mt-24 px-4 py-20 sm:py-28"
+>
   <div class="mx-auto max-w-2xl text-center" data-reveal>
-    <p class="text-brand mb-4 text-xs font-semibold tracking-[0.25em] uppercase">
+    <p
+      class="text-brand mb-4 text-xs font-semibold tracking-[0.25em] uppercase"
+    >
       Who I am
     </p>
-    <h2 class="text-3xl font-bold tracking-tight text-balance sm:text-4xl md:text-5xl">
+    <h2
+      class="text-3xl font-bold tracking-tight text-balance sm:text-4xl md:text-5xl"
+    >
       I build things at the intersection of
       <span class="text-brand">data</span>, <span class="text-brand">code</span>
       and <span class="text-brand">curiosity</span>.
     </h2>
-    <p class="text-muted-foreground mx-auto mt-6 max-w-xl text-base leading-relaxed sm:text-lg">
-      Always chasing the next challenge — whether that's a gnarly data problem, a
-      new language, or a side project that refuses to leave my head.
+    <p
+      class="text-muted-foreground mx-auto mt-6 max-w-xl text-base leading-relaxed sm:text-lg"
+    >
+      Always chasing the next challenge - whether that's a gnarly data problem,
+      a new language, or a side project that refuses to leave my head.
     </p>
   </div>
 
@@ -49,7 +58,7 @@ const facets = [
           data-reveal
           style={`--reveal-delay: ${i * 90}ms;`}
         >
-          <div class="from-brand/10 pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full bg-gradient-to-br to-transparent opacity-0 blur-xl transition-opacity duration-300 group-hover:opacity-100" />
+          <div class="from-brand/10 pointer-events-none absolute -top-8 -right-8 h-24 w-24 rounded-full bg-linear-to-br to-transparent opacity-0 blur-xl transition-opacity duration-300 group-hover:opacity-100" />
           <div class="bg-brand/10 text-brand mb-4 flex size-11 items-center justify-center rounded-xl transition-transform duration-300 group-hover:scale-110">
             <Icon name={f.icon} class="size-5" />
           </div>

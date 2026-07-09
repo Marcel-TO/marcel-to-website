@@ -10,12 +10,16 @@ import { Icon } from 'astro-icon/components'
   {/* ---------- Bezel matte with rounded window cut-out ---------- */}
   <div class="pf-hole" aria-hidden="true"></div>
 
+  {
+    /* ---------- SVG frame: bezel fill + one continuous carved border ---------- */
+  }
+  <svg class="pf-svg" aria-hidden="true" preserveAspectRatio="none">
+    <path class="pf-fill" fill-rule="evenodd"></path>
+    <path class="pf-stroke"></path>
+  </svg>
+
   {/* ---------- Carved logo tab (left) ---------- */}
-  <Link
-    href="/"
-    aria-label={SITE.title}
-    class="pf-tab pf-tab-logo"
-  >
+  <Link href="/" aria-label={SITE.title} class="pf-tab pf-tab-logo">
     <Icon name="logo" size={40} class="text-foreground" />
   </Link>
 
@@ -25,7 +29,7 @@ import { Icon } from 'astro-icon/components'
       NAV_LINKS.map((item) => (
         <Link
           href={item.href}
-          class="rounded-full px-3.5 py-1.5 text-sm font-medium text-foreground/60 capitalize transition-colors hover:bg-foreground/10 hover:text-foreground"
+          class="text-foreground/60 hover:bg-foreground/10 hover:text-foreground rounded-full px-3.5 py-1.5 text-sm font-medium capitalize transition-colors"
         >
           {item.label}
         </Link>
@@ -47,12 +51,10 @@ import { Icon } from 'astro-icon/components'
 <style>
   .page-frame {
     --bezel: var(--background);
+    --pf-border: color-mix(in oklab, var(--foreground) 24%, transparent);
   }
 
-  /* Bezel: an opaque matte filling everything AROUND a rounded window.
-     The element itself is transparent (content shows through); the huge
-     spread box-shadow paints the frame region, honouring the radius so the
-     inner window corners are automatically rounded. */
+  /* Invisible anchor - used only to measure the window rectangle in JS. */
   .pf-hole {
     position: fixed;
     top: var(--pf-bar-h);
@@ -60,16 +62,32 @@ import { Icon } from 'astro-icon/components'
     right: var(--pf-frame);
     bottom: var(--pf-frame);
     border-radius: var(--pf-win-r);
-    box-shadow:
-      0 0 0 50vmax var(--bezel),
-      inset 0 0 0 1.5px color-mix(in oklab, var(--foreground) 22%, transparent),
-      inset 0 0 0 3px color-mix(in oklab, var(--background) 60%, transparent),
-      inset 0 0 60px color-mix(in oklab, var(--foreground) 6%, transparent);
+    pointer-events: none;
+    z-index: -1;
+  }
+
+  /* Fixed overlay that fills the bezel AND strokes the full carved border.
+     Both share the same contour path, so fill and border align perfectly. */
+  .pf-svg {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
     pointer-events: none;
     z-index: 60;
   }
+  .pf-fill {
+    fill: var(--bezel);
+  }
+  .pf-stroke {
+    fill: none;
+    stroke: var(--pf-border);
+    stroke-width: 1.5;
+    stroke-linejoin: round;
+    vector-effect: non-scaling-stroke;
+  }
 
-  /* ---------- Generic carved tab ---------- */
+  /* ---------- Carved tabs (content holders; the bezel is drawn by the SVG) ---------- */
   .pf-tab {
     position: fixed;
     top: 0;
@@ -77,50 +95,19 @@ import { Icon } from 'astro-icon/components'
     display: flex;
     align-items: center;
     justify-content: center;
-    /* Push content up so it centres within the top bar, leaving the
-       protrusion below the bar as the carved tab shape. */
+    /* Push content up so it centres within the top bar. */
     padding-bottom: calc(var(--pf-logo-h) - var(--pf-bar-h));
-    background: var(--bezel);
-    border-bottom-left-radius: var(--pf-tab-r);
-    border-bottom-right-radius: var(--pf-tab-r);
     box-sizing: border-box;
     z-index: 62;
   }
 
-  /* Inverted-radius fillets that blend each tab side into the window's
-     top edge. Anchored to the tab's own edges, so they track any width. */
-  .pf-tab::before,
-  .pf-tab::after {
-    content: '';
-    position: absolute;
-    top: var(--pf-bar-h);
-    width: var(--pf-fillet);
-    height: var(--pf-fillet);
-  }
-  .pf-tab::before {
-    left: calc(-1 * var(--pf-fillet));
-    background: radial-gradient(
-      circle at bottom left,
-      transparent var(--pf-fillet),
-      var(--bezel) calc(var(--pf-fillet) + 0.5px)
-    );
-  }
-  .pf-tab::after {
-    left: 100%;
-    background: radial-gradient(
-      circle at bottom right,
-      transparent var(--pf-fillet),
-      var(--bezel) calc(var(--pf-fillet) + 0.5px)
-    );
-  }
-
-  /* Left — logo */
+  /* Left - logo */
   .pf-tab-logo {
     left: var(--pf-logo-x);
     width: var(--pf-logo-w);
   }
 
-  /* Center — navigation (hidden on mobile) */
+  /* Center - navigation (hidden on mobile) */
   .pf-tab-nav {
     left: 50%;
     transform: translateX(-50%);
@@ -134,10 +121,99 @@ import { Icon } from 'astro-icon/components'
     }
   }
 
-  /* Right — theme toggle / mobile menu */
+  /* Right - theme toggle / mobile menu */
   .pf-tab-actions {
     right: var(--pf-logo-x);
     gap: 0.5rem;
     padding-inline: 0.85rem;
   }
 </style>
+
+<script>
+  // Build the frame as a single continuous contour: the window rounded-rect
+  // whose top edge dips up-and-over each tab (concave fillets + rounded tab
+  // corners). The fill path is the viewport rect minus this contour (even-odd);
+  // the stroke path is the contour alone, giving one unbroken carved border.
+  function buildFrame() {
+    const svg = document.querySelector<SVGSVGElement>('.pf-svg')
+    const hole = document.querySelector<HTMLElement>('.pf-hole')
+    if (!svg || !hole) return
+    const fill = svg.querySelector<SVGPathElement>('.pf-fill')
+    const stroke = svg.querySelector<SVGPathElement>('.pf-stroke')
+    if (!fill || !stroke) return
+
+    const de = document.documentElement
+    const W = de.clientWidth
+    const H = de.clientHeight
+    svg.setAttribute('viewBox', `0 0 ${W} ${H}`)
+
+    const rootStyle = getComputedStyle(de)
+    const rem = parseFloat(rootStyle.fontSize) || 16
+    const v = (name: string) => {
+      const s = rootStyle.getPropertyValue(name).trim()
+      return s.endsWith('rem') ? parseFloat(s) * rem : parseFloat(s)
+    }
+    const R = v('--pf-win-r')
+    const F = v('--pf-fillet')
+    const T = v('--pf-tab-r')
+
+    const hr = hole.getBoundingClientRect()
+    const L = hr.left
+    const Tp = hr.top
+    const Rt = hr.right
+    const Bt = hr.bottom
+
+    const tabs = Array.from(document.querySelectorAll<HTMLElement>('.pf-tab'))
+      .map((el) => el.getBoundingClientRect())
+      .filter((r) => r.width > 0 && r.height > 0)
+      .sort((a, b) => a.left - b.left)
+
+    let d = `M ${L + R} ${Tp}`
+    for (const t of tabs) {
+      const tl = t.left
+      const tr = t.right
+      const tb = t.bottom
+      const prot = tb - Tp // tab protrusion depth below the window's top edge
+      let f = F
+      let cr = Math.min(T, (tr - tl) / 2)
+      // The concave fillet and the rounded tab corner share the tab side. If
+      // together they exceed the protrusion depth, the side would invert and
+      // draw a stray vertical line - so shrink both to fit and meet cleanly.
+      if (f + cr > prot) {
+        const k = prot / (f + cr)
+        f *= k
+        cr *= k
+      }
+      d += ` L ${tl - f} ${Tp}`
+      d += ` A ${f} ${f} 0 0 1 ${tl} ${Tp + f}` // left concave fillet
+      d += ` L ${tl} ${tb - cr}`
+      d += ` A ${cr} ${cr} 0 0 0 ${tl + cr} ${tb}` // bottom-left tab corner
+      d += ` L ${tr - cr} ${tb}`
+      d += ` A ${cr} ${cr} 0 0 0 ${tr} ${tb - cr}` // bottom-right tab corner
+      d += ` L ${tr} ${Tp + f}`
+      d += ` A ${f} ${f} 0 0 1 ${tr + f} ${Tp}` // right concave fillet
+    }
+    d += ` L ${Rt - R} ${Tp}`
+    d += ` A ${R} ${R} 0 0 1 ${Rt} ${Tp + R}` // top-right window corner
+    d += ` L ${Rt} ${Bt - R}`
+    d += ` A ${R} ${R} 0 0 1 ${Rt - R} ${Bt}` // bottom-right
+    d += ` L ${L + R} ${Bt}`
+    d += ` A ${R} ${R} 0 0 1 ${L} ${Bt - R}` // bottom-left
+    d += ` L ${L} ${Tp + R}`
+    d += ` A ${R} ${R} 0 0 1 ${L + R} ${Tp}` // top-left
+    d += ' Z'
+
+    stroke.setAttribute('d', d)
+    fill.setAttribute('d', `M 0 0 L ${W} 0 L ${W} ${H} L 0 ${H} Z ${d}`)
+  }
+
+  const schedule = () => requestAnimationFrame(buildFrame)
+  schedule()
+  window.addEventListener('resize', schedule)
+  document.addEventListener('astro:page-load', schedule)
+  document.addEventListener('astro:after-swap', schedule)
+  document.fonts?.ready?.then(schedule)
+  // React islands (ThemeToggle / MobileMenu) can change tab widths post-hydration.
+  const ro = new ResizeObserver(schedule)
+  document.querySelectorAll('.pf-tab').forEach((el) => ro.observe(el))
+</script>
