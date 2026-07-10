@@ -45,7 +45,7 @@ const MobileMenu = () => {
                     <span className="sr-only">Toggle menu</span>
                 </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="bg-background">
+            <DropdownMenuContent align="end" className="z-[70] bg-background">
                 {NAV_LINKS.map((item) => (
                     <DropdownMenuItem key={item.href} asChild>
                         <a
