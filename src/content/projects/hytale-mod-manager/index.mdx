@@ -1,0 +1,28 @@
+---
+title: 'Hytale Mod Manager'
+description: 'A tool that allows you to easily update and deploy all your Hytale mods'
+tags: ['Go', 'Game Development', 'Hytale']
+link: 'https://github.com/Marcel-TO/Hytale-Mod-Manager'
+startDate: '2026-05-10'
+contributors: ['me']
+---
+
+Every time Hytale shipped a new version, I lost an afternoon. Not to modding. To the chores around it.
+
+Each of my mods lived in its own repository. Each had a `gradle.properties` file pinning the game version. When the game updated, I had to open every repo, bump the version by hand, rebuild the jar, copy it into the game's mods folder, and push the new build to CurseForge. One mod at a time. Do that for a handful of mods and the fun drains out fast.
+
+The worst part wasn't the tedium. It was the mistakes. Sometimes I'd copy the new jar and forget to delete the old one. Two versions of the same mod would sit in the folder, and the game would break in ways that took me too long to trace back to my own carelessness. The task was boring enough that I stopped paying attention, and boring tasks you don't pay attention to are exactly the ones that bite you.
+
+So I did what programmers do when a chore repeats often enough: I automated it. I wanted one command that updated, built, deployed, and published everything. No hand-editing. No copying files around. No version conflicts.
+
+I wrote it in **Go**. I picked Go because it's simple, it's fast, and it compiles to a single binary that runs anywhere. For a command-line tool you'll run a hundred times, that matters more than anything clever.
+
+The tool has two commands. `publish` builds each mod and uploads it to CurseForge. `update` does the whole chain: it rewrites the game version in `gradle.properties`, rebuilds the jar, optionally copies it into your Hytale mods folder, optionally commits the change to git, and optionally publishes the result. You describe your mods once in a small YAML file, and after that a new game version is one line.
+
+For building, it prefers `just build` if the repo has a justfile, and falls back to `./gradlew build` if it doesn't. I didn't want to force one workflow on every mod. The tool should adapt to the repo, not the other way around.
+
+One decision I'm glad I made early: when a mod fails, the tool doesn't stop. It logs the failure, skips that mod, and keeps going. At the end it tells you which ones broke. The first version bailed on the first error, and I hated it. If one mod out of six has a bad build, I still want the other five updated. Failing loudly but continuing is almost always better than failing early.
+
+Right now it only publishes to CurseForge. That's not a limitation I chose so much as one I haven't gotten to yet. Support for other platforms is the obvious next step.
+
+None of this is hard. That's kind of the point. The tool is small and does one narrow thing. But it turned an afternoon of error-prone busywork into a single command, and now updating my mods is something I do without thinking about it — which, for a chore, is the highest praise I can give.
