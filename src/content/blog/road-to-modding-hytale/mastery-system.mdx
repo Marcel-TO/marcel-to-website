@@ -1,0 +1,393 @@
+---
+title: 'Road to Modding Hytale - Mastery System'
+description: 'How I created a mastery/leveling system for Hytale that is fully extensible'
+date: 2026-07-16
+tags: ['Java', 'Modding', 'Game Development', 'Hytale']
+image: './banner.png'
+authors: ['me']
+order: 1
+---
+
+import Callout from '@/components/Callout.astro'
+
+# Creating a Mastery System for Hytale
+I wanted a mastery system for a Hytale project I'm part of. The idea is simple: you get better at what you do. Kill enemies with a sword and your sword mastery goes up. Break blocks with a pickaxe and your pickaxe mastery goes up. Level up and you unlock new abilities tied to that skill.
+
+That sounds easy, and the core idea is. The hard part was making it extensible. I didn't want to rewrite the whole thing every time I added a skill. I wanted to drop in a new skill the way you add a new file. This post is about weapon mastery, but nothing here is specific to weapons. The same shape works for anything.
+
+## Logic Structure
+The cleanest way I found to think about it is three parts, following the ECS (Entity Component System) architecture:
+- Components
+- MasteryCore
+- Systems
+
+### Components
+Components are just data. They hold what each skill needs to know: the experience points, and anything else specific to that skill. No logic, just state.
+
+### MasteryCore
+MasteryCore is the bridge. It does the leveling math, maps entities to levels, and maps items to components. Everything that isn't state and isn't an event handler lives here.
+
+### Systems
+Systems are the logic. They listen for things that happen in the game and react. When a player kills something with a sword, a system checks whether that player has a sword mastery component, and if so, hands it experience.
+
+## Base Mastery Component
+Java makes the extensibility part easy. You write a base class and extend it. So we start with a base mastery component that holds what every skill has in common: the experience points and the mastery name.
+
+The structure I'm aiming for looks like this:
+```
+- BaseMasteryComponent
+    - weapons
+        - WeaponMasteryComponent
+            - SwordMasteryComponent
+            - ....
+    - ...
+```
+
+The base component knows how to add, set, and get experience. Everything else is abstract, left for the child classes to fill in. That's the whole trick to making it extensible: keep the shared part concrete and push the specifics down.
+
+```java
+public abstract class BaseMasteryComponent implements Component<EntityStore> {
+
+  protected int experience;
+
+  protected String masteryName;
+
+  protected BaseMasteryComponent(String masterName) {
+    this.experience = 0;
+    this.masteryName = masterName;
+  }
+
+  protected BaseMasteryComponent() {
+    this.masteryName = "";
+    this.experience = 0;
+  }
+
+  protected BaseMasteryComponent(BaseMasteryComponent other) {
+    this.experience = other.experience;
+    this.masteryName = other.masteryName;
+  }
+
+  public int getExperience() {
+    return this.experience;
+  }
+
+  public void setExperience(int gainedExperience) {
+    this.experience = gainedExperience;
+  }
+
+  public void addExperience(int gainedExperience) {
+    this.experience += gainedExperience;
+  }
+
+  @NullableDecl
+  @Override
+  public abstract Component<EntityStore> clone();
+
+  @Override
+  public abstract String toString();
+
+  public abstract String getMasteryName();
+}
+
+```
+
+Good start. Now we add a weapon mastery component that extends the base and adds what's specific to weapons. In my case I wanted to track whether a weapon has multiple tiers.
+
+```java
+public abstract class WeaponMasteryComponent extends BaseMasteryComponent {
+  protected WeaponMasteryComponent() {
+    super();
+  }
+
+  protected WeaponMasteryComponent(String masterName) {
+    super(masterName);
+  }
+
+  protected WeaponMasteryComponent(WeaponMasteryComponent other) {
+    super(other);
+  }
+
+  @NullableDecl
+  @Override
+  public abstract Component<EntityStore> clone();
+
+  @Override
+  public String toString() {
+    return this.masteryName
+        + "{level="
+        + MasteryCalculations.getLevel(this.experience)
+        + ", Experience="
+        + this.experience
+        + ", toNext="
+        + MasteryCalculations.getTotalExperienceForLevel(
+            MasteryCalculations.getLevel(this.experience))
+        + "}";
+  }
+
+  @Override
+  public String getMasteryName() {
+    return this.masteryName;
+  }
+
+  public abstract Map<String, Integer> getWeaponTierMap();
+}
+```
+
+You'll notice a `MasteryCalculations` class in there. That's where the leveling math lives. I pulled it out so I could change the leveling curve without touching anything else. More on that in the MasteryCore section. For now, back to the components.
+
+With the base and the weapon layer in place, we can write the actual weapon components. I'll do sword mastery; the rest follow the same pattern. The sword component extends weapon mastery and adds what's specific to swords.
+
+```java
+public class SwordMasteryComponent extends WeaponMasteryComponent {
+
+  private static ComponentType<EntityStore, SwordMasteryComponent> TYPE;
+
+  public static final BuilderCodec<SwordMasteryComponent> CODEC = buildCodec();
+
+  public static void setComponentType(ComponentType<EntityStore, SwordMasteryComponent> type) {
+    TYPE = type;
+  }
+
+  public static ComponentType<EntityStore, SwordMasteryComponent> getComponentType() {
+    return TYPE;
+  }
+
+  public SwordMasteryComponent() {
+    super("Sword Mastery");
+  }
+
+  public SwordMasteryComponent(SwordMasteryComponent other) {
+    super(other);
+  }
+
+  @NullableDecl
+  @Override
+  public Component<EntityStore> clone() {
+    return new SwordMasteryComponent(this);
+  }
+
+  public Map<String, Integer> getWeaponTierMap() {
+    Map<String, Integer> map = new HashMap<>();
+    map.put("Weapon_Sword_Iron", 1);
+    return map;
+  }
+
+  private static BuilderCodec<SwordMasteryComponent> buildCodec() {
+    var playerExperience = new KeyedCodec<>("SwordMasteryExperience", Codec.INTEGER);
+
+    return BuilderCodec.builder(SwordMasteryComponent.class, SwordMasteryComponent::new)
+        .append(
+            playerExperience, (data, value) -> data.experience = value, (data) -> data.experience)
+        .addValidator(Validators.nonNull())
+        .add()
+        .build();
+  }
+}
+```
+
+And that's it. A working sword mastery component. To add a new weapon, copy this file and change a few names. That was the goal.
+
+
+## Entity Level Component
+Killing something with a sword gives sword experience. But surely a skeleton should be worth more than a chicken? For that we need to know how strong the thing you killed was. That's what the entity level component is for. It holds the level of an entity, and MasteryCore uses it to decide how much experience the kill was worth.
+
+```java
+public class EntityLevelComponent implements Component<EntityStore> {
+  private static ComponentType<EntityStore, EntityLevelComponent> TYPE;
+
+  public static final BuilderCodec<EntityLevelComponent> CODEC = buildCodec();
+
+  private int level;
+
+  public EntityLevelComponent() {
+    this.level = 1;
+  }
+
+  public EntityLevelComponent(int level) {
+    this.level = level;
+  }
+
+  public EntityLevelComponent(EntityLevelComponent other) {
+    this.level = other.level;
+  }
+
+  public int getLevel() {
+    return level;
+  }
+
+  public void setLevel(int level) {
+    if (level < 1) {
+      throw new IllegalArgumentException("Level cannot be less than 1");
+    }
+    this.level = level;
+  }
+
+  public static ComponentType<EntityStore, EntityLevelComponent> getComponentType() {
+    return TYPE;
+  }
+
+  public static void setComponentType(ComponentType<EntityStore, EntityLevelComponent> type) {
+    TYPE = type;
+  }
+
+  public static BuilderCodec<EntityLevelComponent> buildCodec() {
+    KeyedCodec<Integer> entityLevel = new KeyedCodec<>("EntityLevel", Codec.INTEGER);
+
+    return BuilderCodec.builder(EntityLevelComponent.class, EntityLevelComponent::new)
+        .append(entityLevel, (data, value) -> data.level = value, (data) -> data.level)
+        .addValidator(Validators.nonNull())
+        .add()
+        .build();
+  }
+
+  @Override
+  public Component<EntityStore> clone() {
+    return new EntityLevelComponent(this);
+  }
+
+  @Override
+  public String toString() {
+    return "EntityLevelComponent{level=" + this.getLevel() + "}";
+  }
+}
+```
+
+## Mastery Core
+The components are done, so now we get to the core. This is the heart of the system. It does the leveling math, maps entities to levels, and maps items to components.
+
+### Mastery Calculations
+
+Start with the math. I wanted the cost of a level to grow the higher you go, so reaching the top takes real effort rather than a slow grind at a fixed rate. The formula has four knobs:
+- level increase factor
+- scaling factor
+- XP per kill/action
+- XP level exponent
+
+The level for a given amount of experience comes out like this:
+$$
+\left\lfloor \left( \frac{\text{experience}}{\text{SCALINGFACTOR}} \right)^{\frac{1}{\text{LEVELINCREASEFACTOR}}} \right\rfloor + 1
+$$
+
+From this one formula and a few helpers, everything else falls out: the level for a given amount of experience, the total experience a level costs, how much you need for the next one, and how much a kill is worth given the victim's level. Change the knobs and the whole curve shifts. Nothing else has to change.
+
+```java
+public class MasteryCalculations {
+
+  private static final double LEVELINCREASEFACTOR = 1.4;
+
+  private static final double SCALINGFACTOR = 100.0;
+
+  private static final int XP_PER_KILL = 50;
+
+  private static final double XP_LEVEL_EXPONENT = 0.75;
+
+  public static int getLevel(int experience) {
+    if (experience < 0) return 1;
+    return (int) floor(Math.pow((experience / SCALINGFACTOR), (1 / LEVELINCREASEFACTOR))) + 1;
+  }
+
+  public static int getTotalExperienceForLevel(int level) {
+    if (level < 1) return 0;
+    double result = SCALINGFACTOR * Math.pow(level, LEVELINCREASEFACTOR);
+    if (result >= Integer.MAX_VALUE) return Integer.MAX_VALUE;
+    return (int) floor(result);
+  }
+
+  public static int getExperienceToNextLevel(int experience) {
+    return getTotalExperienceForLevel(getLevel(experience));
+  }
+
+  public static boolean isLevelUp(int experience, int gainedExperience) {
+    return getExperienceToNextLevel(experience) <= gainedExperience;
+  }
+
+  public static int getExperienceFromDefeatedLevel(int level) {
+    return Math.max(1, (int) Math.round(XP_PER_KILL * Math.pow(level, XP_LEVEL_EXPONENT)));
+  }
+}
+```
+
+### Mapping Tables
+I'm not sure this is the best way to do it, but it works and I haven't found better yet. The idea is plain: I need to turn an entity into a level, and an item into a mastery component. So there are two hashmaps, one for each. Look something up, get back what you need.
+
+## Systems
+With the groundwork done, we tie it all together. The systems are where things actually happen. Since we built weapon mastery, the obvious system listens to `DeathSystems.OnDeathSystem` and asks: did a player just kill something with a weapon? If so, does the player have the matching mastery component? If so, give it experience.
+
+```java
+public class KillSystem extends DeathSystems.OnDeathSystem {
+
+  @Override
+  public void onComponentAdded(
+      @Nonnull Ref<EntityStore> ref,
+      @Nonnull DeathComponent deathComponent,
+      @Nonnull Store<EntityStore> store,
+      @Nonnull CommandBuffer<EntityStore> commandBuffer) {
+    var deathInfo = deathComponent.getDeathInfo();
+    if (deathInfo == null) return;
+
+    if (!(deathInfo.getSource() instanceof Damage.EntitySource source)) return;
+
+    // Get reference from death source (killer)
+    var killerRef = source.getRef();
+    if (!killerRef.isValid()) return;
+
+    // Check if the killer is a player
+    PlayerRef playerRef = store.getComponent(killerRef, PlayerRef.getComponentType());
+    if (playerRef == null) return;
+    // Check if the killer is a player
+    Player player = store.getComponent(killerRef, Player.getComponentType());
+    if (player == null) return;
+
+    // Check if target is entity
+    NPCEntity targetEntity =
+        store.getComponent(ref, Objects.requireNonNull(NPCEntity.getComponentType()));
+    if (targetEntity == null) return;
+
+    // Check if target has entity level component
+    EntityLevelComponent entityLevelComponent =
+        store.getComponent(ref, EntityLevelComponent.getComponentType());
+    if (entityLevelComponent == null) return;
+
+    // Get expectedMasteryFromWeapon
+    var expectedMasteryComponentType = getMasteryComponentType(player);
+    if (expectedMasteryComponentType == null) return;
+
+    // Check if mastery exists on players
+    BaseMasteryComponent mastery = store.getComponent(killerRef, expectedMasteryComponentType);
+    if (mastery == null) return;
+
+    // Send event to give experience
+    GiveMasteryExperienceEvent.dispatch(
+        killerRef,
+        store,
+        MasteryCalculations.getExperienceFromDefeatedLevel(entityLevelComponent.getLevel()),
+        expectedMasteryComponentType);
+  }
+
+  @Nonnull
+  @Override
+  public Query<EntityStore> getQuery() {
+    return Query.and(Archetype.of(DeathComponent.getComponentType()));
+  }
+
+  private ComponentType<EntityStore, ? extends BaseMasteryComponent> getMasteryComponentType(
+      @Nonnull Player player) {
+    ItemStack itemStack = player.getInventory().getItemInHand();
+    if (itemStack == null) return null;
+    String weaponID = itemStack.getItem().getId();
+
+    return ItemMasteryMappingTable.getMasteryTypeFromItemId(weaponID);
+  }
+}
+```
+
+The system does a chain of checks, and any of them can bail out early. Was it a player who did the killing? Does the victim have a level? Does the item in the player's hand map to a mastery? Does the player actually have that mastery? Only if all of these pass does anyone get experience. The `getMasteryComponentType` method is the interesting one: it takes the item in the player's hand and looks up the matching mastery in the item-to-mastery table.
+
+One thing I glossed over: the system doesn't add the experience itself. It dispatches a `GiveMasteryExperienceEvent`. That keeps the system from knowing anything about how experience is stored. MasteryCore handles the event and updates the component. The system just says "this happened"; the core decides what it means. That separation is what makes the whole thing easy to extend later.
+
+## Wrapping Up
+Looking back, none of the individual pieces are hard. A base class, a few components, some math, one system. What took the thinking was keeping them apart. Every time I was tempted to let one part reach into another, that's where the future pain would have been.
+
+The test of whether I got it right is how much work it takes to add a skill. Right now it's: copy a component, add two lines to the mapping tables, write a system if the trigger is new. No changes to the base, none to the math, none to anything that already works. That's the whole point, and it's the part I'd tell you to care about more than any of the code above.
+
+I'm still not happy with the mapping tables, and I'll probably revisit them. But that's the nice thing about building it this way. When I do, it'll be one piece I'm changing, not the whole system. If you're building something like this, that's the property worth optimizing for. Not cleverness. Just the ability to change one thing without breaking the rest.
