@@ -21,25 +21,6 @@ import { Icon } from 'astro-icon/components'
   <span class="sr-only">Toggle theme</span>
 </Button>
 
-<script is:inline>
-  const theme = (() => {
-    const localStorageTheme = localStorage?.getItem('theme') ?? ''
-    if (['dark', 'light'].includes(localStorageTheme)) {
-      return localStorageTheme
-    }
-    if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-      return 'dark'
-    }
-    return 'light'
-  })()
-
-  document.documentElement.setAttribute('data-theme', theme)
-  document.documentElement.classList.add(
-    theme === 'dark' ? 'scheme-dark' : 'scheme-light'
-  )
-  window.localStorage.setItem('theme', theme)
-</script>
-
 <script>
   function handleToggleClick() {
     const element = document.documentElement

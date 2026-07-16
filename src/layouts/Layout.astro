@@ -7,7 +7,6 @@ import Head from '@/components/Head.astro'
 import Header from '@/components/Header.astro'
 import { SITE } from '@/consts'
 import { cn } from '@/lib/utils'
-import { ClientRouter } from "astro:transitions";
 import Analytics from '@vercel/analytics/astro'
 import  SpeedInsights  from "@vercel/speed-insights/astro"
 
@@ -23,7 +22,6 @@ const { class: className, hideHeader = false } = Astro.props
 <html class="bg-radial from-background-gradient to-background text-foreground" lang={SITE.locale}>
   <Head>
     <slot name="head" />
-    <ClientRouter />
     <Analytics />
     <SpeedInsights />
   </Head>
