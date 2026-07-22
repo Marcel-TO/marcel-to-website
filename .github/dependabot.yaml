@@ -1,0 +1,23 @@
+---
+version: 2
+updates:
+  # update Dependencies
+  - package-ecosystem: "bun"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "02:00"
+      timezone: "Europe/Vienna"
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "javascript:bun"
+    assignees:
+      - "Marcel-TO"
+    groups:
+      personal-website:
+        patterns:
+          - "*"
