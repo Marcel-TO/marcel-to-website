@@ -26,7 +26,7 @@ As a Data Analyst I often work with Data Transformation and Business Intelligenc
 
 The problem is that sometimes I'll build something in Power Query and then realize I need to use it in Python. And when that happens, you're stuck. You can rewrite everything by hand, which takes forever. Or you can ask an LLM to convert it, which is faster but produces code that's wrong in subtle ways. The LLM will add functions you don't need, or miss important default behaviors, or just quietly skip steps it doesn't understand.
 
-So I decided to write a converter that would translate Power Query to Python correctly. Not approximately correctly - actually correct, step by step, with the same output. This turned out to require building an interpreter, and I learned a lot about how interpreters work that I didn't know before.
+So I decided to write a converter that would translate Power Query to Python correctly and deterministicly. Not approximately correctly - actually correct, step by step, with the same output. This turned out to require building an interpreter, and I learned a lot about how interpreters work that I didn't know before.
 
 <Callout title="PQC - PowerQueryConverter" variant="corollary">
   <LinkButton
@@ -50,7 +50,7 @@ The reason I needed to build an interpreter for Power Query was that I wasn't ju
 
 ## How Interpreters Work
 
-Interpreters generally work in stages. First you tokenize the source code, parse into a data structure that represents what it means. Then you execute that data structure.
+Interpreters generally work in stages. You tokenize the source code, parse it into a data structure that represents what it means and then you execute that data structure.
 
 First you have a lexer (Scanner or Tokenizer), which takes the raw text and breaks it into tokens - things like "keyword", "identifier", "number", "operator". Then you have a parser, which takes those tokens and builds a tree structure called an Abstract Syntax Tree, or **AST**.
 
