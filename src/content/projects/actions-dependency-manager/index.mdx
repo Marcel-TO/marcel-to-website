@@ -1,0 +1,93 @@
+---
+title: 'Action Dependency Manager'
+description: 'A dependency manager for GitHub Actions that allows you to manage and update your workflow dependencies easily.'
+tags: ['GH-Action', 'Go', 'Dependency Manager']
+link: 'https://github.com/Marcel-TO/Action-Dependency-Manager'
+startDate: '2026-07-29'
+endDate: '2026-08-30'
+contributors: ['me']
+---
+
+import Callout from '@/components/Callout.astro'
+
+Now more than ever, in a world of vulnerabilities, keeping dependencies up to date is crucial. Due to my role as a maintainer of multiple Repositories across different organizations and personal projects, I found myself spending a lot of time manually updating dependencies. GH-Actions are basically a necessity in my projects. Meaning if 1 of my dependencies is outdated inside a GH-Action, I have to update it in every single workflow file in every single repository.
+
+Thats why I wrote a CLI tool. **ADM** scans the .github/workflows directory of each configured repository, discovers every `uses:` reference, resolves the latest release of each action and can either report what is outdated (`check`) or pin every action to the latest release commit (`update`).
+
+## Why?
+
+Pinning actions to a commit SHA is the recommended way to consume third-party GitHub Actions securely (to prevent version drift which can result in malicious code execution). But a plain SHA tells you nothing about which version it represents, and keeping it current by hand across several repositories is tedious. ADM automates this by rewriting references to the following form:
+
+```yaml
+uses: actions/checkout@3d3c42e... # v7.0.1
+```
+
+The commit SHA is used as the actual pin, while the human-readable release tag is kept as a trailing comment.
+
+## Prerequisites
+
+ADM relies on the [GitHub CLI](https://cli.github.com/) to look up release tags
+and their corresponding commit SHAs.
+
+- [Go](https://go.dev/dl/) 1.26+ (to build/run from source)
+- [`gh` CLI](https://cli.github.com/) - installed and authenticated (`gh auth login`)
+- A GitHub account with access to the actions you depend on
+
+<Callout title="What ADM behind the scenes does" variant="theorem">
+  <p>
+      To fetch the latest release version of an action, ADM uses the Github API to query the repository for its releases. It then retrieves the commit SHA associated with the latest release and rewrites the workflow file to pin the action to that specific commit SHA, while also adding a comment with the human-readable release tag for reference.
+
+      ```bash
+      # Fetch the latest release tag of a dependency
+      gh release view --repo actions/checkout --json tagName --jq .tagName
+
+      # Resolve a tag (lightweight or annotated) to its commit SHA
+      gh api repos/actions/checkout/commits/v7.0.1 -H "Accept: application/vnd.github.sha"
+      ```
+  </p>
+</Callout>
+
+## Configuration
+
+ADM reads a `action-repositories.yaml` file from the current working directory.
+Copy the provided example to get started:
+
+```bash
+cp action-repositories.yaml.example action-repositories.yaml
+```
+
+Here an overview of the fields in the configuration file:
+
+| Field          | Description                                                        |
+| -------------- | ------------------------------------------------------------------ |
+| `name`         | Human-friendly name shown in the output.                           |
+| `id`           | Numeric identifier used by the `--select` flag.                    |
+| `repoLocation` | Absolute or relative path to the local checkout of the repository. |
+
+> `action-repositories.yaml` is git-ignored, so your local paths stay private.
+
+Example:
+```yaml
+repos:
+  - name: "Repo 1"
+    id: 1
+    repoLocation: "local/path/to/repo1"
+  - name: "Repo 2"
+    id: 2
+    repoLocation: "local/path/to/repo2"
+```
+
+## Usage
+
+Run directly with Go:
+
+```bash
+go run main.go <command> [flags]
+```
+
+Or build a binary first:
+
+```bash
+go build -o adm .
+./adm <command> [flags]
+```
