@@ -1,0 +1,32 @@
+---
+title: 'Local Fabric Development'
+description: 'How I manage to develop fabric notebooks locally without constantly burning capacity'
+date: 2026-10-17
+tags: ['Development', 'Python', 'Microsoft Fabric', 'Notebooks']
+image: './banner.jpeg'
+authors: ['me']
+---
+
+import Callout from '@/components/Callout.astro'
+import LinkButton from '@/components/LinkButton.astro'
+import { Icon } from 'astro-icon/components'
+
+## Introduction
+
+Customer projects often need a full Microsoft Fabric setup: separate development, staging, and production environments, deployment pipelines, and notebook-based data transformations. That setup is useful, but running every experiment in the cloud can get expensive and time consuming.
+
+I learned that the hard way. While building my first transformation notebooks, I kept starting PySpark sessions and querying tables to debug and test. Each run consumed capacity. When the first bill arrived, I was presented with an unwanted surprised. Once capacity runs out, you can lose access to the environment just when you need to fix something. Increasing capacity might solve the immediate problem, but it makes every experiment more expensive.
+
+I wanted to keep developing without paying Fabric capacity for every test. So I set up a local environment where I can run and debug the notebooks on my own machine. This post explains how I did it.
+
+## How do I actually reduce capacity usage?
+
+By "local development", I don't mean running Fabric itself on my machine. The notebooks still connect to Fabric to fetch data. The difference is that I cache the results, so repeated runs can reuse them instead of querying Fabric again.
+
+The first run still uses capacity because it has to fetch the data. After that, I can test and debug against the cached results without spending capacity on the same queries each time (Pyspark runs locally as well, so no usage).
+
+<Callout variant="note">
+    I'm a data engineer who uses Microsoft Fabric on customer projects, not a Fabric expert. This is the setup that works for my team. It may not be the best fit for every project.
+</Callout>
+
+Sounds great, right? But how do I actually do that? I do not want to rewrite each notebook to use a different data source. I want to keep the same code. No need for manual transformations. I want to keep the same code and have it work with both Fabric and local development.
