@@ -1,0 +1,448 @@
+---
+title: 'Local Fabric Development'
+description: 'How I run and debug Microsoft Fabric notebooks locally, with cached data and the same code in both environments.'
+date: 2026-10-17
+tags: ['Development', 'Python', 'Microsoft Fabric', 'Notebooks']
+image: './banner.jpeg'
+authors: ['me']
+---
+
+import Callout from '@/components/Callout.astro'
+
+## Introduction
+
+My first Fabric bill changed how I developed notebooks. I'd been starting PySpark sessions and querying tables whenever I wanted to test a transformation. Each run consumed capacity. When the bill arrived, I realized how much of that capacity I'd spent on debugging.
+
+Customer projects often need separate development, staging, and production environments, with deployment pipelines and notebooks for data transformations. Those environments have a purpose. But I didn't want to use cloud compute every time I changed a few lines of Python.
+
+Buying more capacity would give me more room. I'd still be spending it on the same debugging work, though. I wanted to run and debug the notebooks on my own machine.
+
+## What I mean by local
+
+By "local", I don't mean running Fabric itself on my laptop. The source data still lives in Fabric. My package adds a local caching layer for supported notebook reads.
+
+<Callout variant="definition" title="A caching layer for Fabric reads">
+    On a cache miss, the package fetches data from Fabric and saves a local copy. On a cache hit, it reads that copy from disk without contacting Fabric. The notebook uses the same supported read calls in both cases.
+</Callout>
+
+PySpark runs the transformations locally, so I can change the code and test it against the cached input using my machine's compute instead of Fabric's. Cached reads don't check for changes in Fabric. I fetch fresh data when I decide to refresh the cache.
+
+There was one constraint. I didn't want a local version of each notebook to maintain alongside the Fabric version. I wanted the same code to work in both places, without changing imports or rewriting data access calls whenever I switched.
+
+<Callout variant="note">
+    I'm a data engineer who uses Microsoft Fabric on customer projects, not a Fabric expert. This setup works for me and my team. Your project may need something different.
+</Callout>
+
+To see how that can work, it helps to look at what a Fabric notebook becomes in a Git repository.
+
+## Fabric notebooks under the hood
+
+If you've used Jupyter, Fabric notebooks will feel familiar. You write code and Markdown in cells, then run the code cells against a live session. Variables remain available between runs. If you're debugging one step of a transformation, you can rerun that cell without starting the whole notebook again.
+
+You might expect the Git version to be a Jupyter `.ipynb` file. For a Python notebook, Fabric's Git integration gives you a directory like this:
+
+```text
+- <YOUR_NOTEBOOKNAME>.Notebook
+    - .platform
+    - notebook-content.py
+```
+
+The `.platform` file contains notebook metadata. The notebook's code lives in `notebook-content.py`.
+
+That Python file is the starting point. It contains comment markers for cells and metadata, so there's enough information to reconstruct a notebook I can open in Jupyter.
+
+I wrote a [notebook converter](https://github.com/binaryrain-net/Binary-Rain-Fabric-Notebook-Converter) to do that in both directions. It turns `notebook-content.py` into an `.ipynb` file, then converts the edited notebook back into Fabric's format.
+
+But converting a file doesn't give it a runtime. Fabric normally supplies `spark`, `display`, and utilities that aren't waiting for me in a local Python process.
+
+For those, I wrote a separate package, [binaryrain-fabric-local-pyspark](https://github.com/binaryrain-net/Binary-Rain-Helper-Toolkit/tree/main/packages/binaryrain_fabric_local_pyspark). The converter adds a setup cell that imports the local replacements and creates a Spark session. The transformation cells keep their code.
+
+That distinction matters. I'm not maintaining a second implementation of each transformation. I'm changing what handles its reads and writes.
+
+## Start with eight orders
+
+Eight orders are enough to test the whole idea. We can fetch them, change a rule, and check the answer by hand. If the total is wrong, there isn't much data to hide behind.
+
+One of those orders is pending. At first we'll include it in the customer's total. Then we'll decide it doesn't belong. That one-line change will travel from Fabric to local development and back.
+
+Create two PySpark notebooks in a Fabric development workspace, named `prepare_orders` and `transform_orders`. Attach the same schema-enabled development lakehouse as the default for both. We'll build the examples directly in those notebooks.
+
+<Callout variant="warning">
+    The preparation notebook overwrites dbo.local_dev_orders. The transformation notebook overwrites dbo.local_dev_customer_totals when run in Fabric. Use a disposable development lakehouse where those names are safe.
+</Callout>
+
+### Create the sample data
+
+Paste this into a code cell in `prepare_orders` and run it once in Fabric:
+
+```python title="prepare_orders"
+rows = [
+    (1, " C001 ", " completed ", 12000),
+    (2, "C001", "completed", 3000),
+    (3, "C001", " cancelled ", 9900),
+    (4, "C002", "completed", 8000),
+    (5, "C002", "pending", 2500),
+    (6, "C003", "completed", 4500),
+    (7, "C003", "cancelled", 2000),
+    (8, "C002", "completed", None),
+]
+
+orders = spark.createDataFrame(
+    rows,
+    "order_id INT, customer_id STRING, status STRING, amount_cents INT",
+)
+
+orders.write.format("delta").mode("overwrite").saveAsTable("dbo.local_dev_orders")
+
+display(spark.table("dbo.local_dev_orders").orderBy("order_id"))
+```
+
+The amounts are integer cents. That keeps the arithmetic easy to check. The data is untidy on purpose, with spaces around some strings, cancelled orders, and a missing amount.
+
+### Write the transformation
+
+Add the following code to `transform_orders`. Put the read, cleaning, aggregation, and output write in separate code cells so you can rerun each step on its own.
+
+```python title="transform_orders"
+from pyspark.sql import functions as F
+
+orders = spark.table("dbo.local_dev_orders")
+
+clean_orders = (
+    orders.withColumn("customer_id", F.trim(F.col("customer_id")))
+    .withColumn("status", F.lower(F.trim(F.col("status"))))
+    .filter(F.col("amount_cents").isNotNull())
+    .filter(F.col("status") != "cancelled")
+)
+
+customer_totals = clean_orders.groupBy("customer_id").agg(
+    F.count("*").alias("order_count"),
+    F.sum("amount_cents").alias("total_cents"),
+)
+
+display(customer_totals.orderBy("customer_id"))
+
+customer_totals.write.format("delta").mode("overwrite").saveAsTable(
+    "dbo.local_dev_customer_totals"
+)
+
+display(spark.table("dbo.local_dev_customer_totals").orderBy("customer_id"))
+```
+
+Save both notebooks, but leave `transform_orders` unrun for now. Its first execution will be on your machine. We'll walk through these cells locally, then change which orders count toward the total.
+
+Use [Fabric Git integration](https://learn.microsoft.com/en-us/fabric/cicd/git-integration/git-get-started) to commit the notebooks to the connected repository, then pull the changes into your local checkout. You should find `transform_orders.Notebook`, including its `.platform` file.
+
+Keep that directory intact. The Jupyter file will be our working copy; this directory is where the edited notebook will return.
+
+## Give the notebook its own Python environment
+
+Fabric chooses a Python environment for you. Locally, you have to choose it yourself. A notebook can open perfectly well and still be running a Python installation that knows nothing about your packages.
+
+You can let the converter prepare the Python environment with `fabric-nb setup`, or follow the manual steps below. [Jump to the setup command](#what-i-actually-type) if you prefer the shortcut. The manual route explains what it installs and why.
+
+Either way, you'll need [uv](https://docs.astral.sh/uv/getting-started/installation/), Git, and the [Azure CLI](https://learn.microsoft.com/en-us/cli/azure/install-azure-cli). Local PySpark also needs Java 17 or newer, with `JAVA_HOME` pointing to the Java installation. Check the [requirements for your PySpark version](https://spark.apache.org/docs/latest/api/python/getting_started/install.html) when choosing Java.
+
+The local package requires Python 3.12 or newer; the converter requires 3.13 or newer. I'll use 3.13 for both.
+
+### Create a Python project
+
+Open a terminal at the root of your local Fabric repository:
+
+```sh
+uv init --name fabric-local-dev --python 3.13
+uv add binaryrain-fabric-local-pyspark==0.1.11 python-dotenv
+uv add --dev ipykernel
+```
+
+If the repository already has a uv project, keep it. Skip `uv init` and check its Python version and dependencies instead.
+
+The PySpark package supplies the local session and supported Fabric calls. `python-dotenv` reads our configuration from `.env`.
+
+Installing them is only half the setup. Jupyter also needs to know which Python environment should execute the cells. That's what `ipykernel` is for. Register the environment under a name you'll recognize:
+
+```sh
+uv run python -m ipykernel install --user --name fabric-local-dev --display-name "Fabric local development"
+```
+
+Open the notebook in whichever Jupyter client you prefer and select **Fabric local development** as the kernel. An import error is a good reason to check that selection before installing the same package again.
+
+If you don't already have a client, JupyterLab is one option:
+
+```sh
+uv add --dev jupyterlab
+uv run jupyter lab .
+```
+
+Start your client from the repository root and keep the converted notebook there. The default cache location is relative to the kernel's working directory. Start from a different folder and you can end up with a different, empty cache, even though yesterday's data is still on disk.
+
+### Sign in and configure access
+
+Moving Spark to my machine doesn't move the source data. The first read still has to authenticate against Fabric.
+
+Sign in with an account that can read the development lakehouse:
+
+```sh
+az login
+```
+
+The package uses `DefaultAzureCredential`, which can use your Azure CLI sign-in. The account still needs permission to read the data, and network restrictions still apply.
+
+Create a `.env` file at the repository root:
+
+```dotenv
+FABRIC_WORKSPACE_ID=<your-development-workspace-id>
+FABRIC_LAKEHOUSE_ID=<your-development-lakehouse-id>
+```
+
+Copy the IDs from the workspace and lakehouse URLs in Fabric, without the angle brackets.
+
+A name like `dbo.local_dev_orders` doesn't say which workspace or lakehouse owns the table. These settings supply that context.
+
+The converter also copies the notebook's default lakehouse IDs into its setup cell. Those values take precedence over `.env` when present. Attach the development lakehouse before converting, rather than relying on `.env` to override a notebook attached somewhere else.
+
+For our example, that's all the connection configuration we need. `spark.table` reads from OneLake without a SQL endpoint or an ODBC driver. If you later use the package's SQL endpoint support, you'll need ODBC Driver 18 for SQL Server and these additional settings:
+
+```dotenv
+FABRIC_SERVER=<your-sql-analytics-endpoint-host>
+FABRIC_DEFAULT_DATABASE=<your-lakehouse-name>
+```
+
+Add these entries to the repository's `.gitignore`, keeping any rules already there:
+
+```gitignore
+.env
+.venv/
+.cache/
+spark-warehouse/
+__pycache__/
+.ipynb_checkpoints/
+```
+
+The cache contains actual data, not just disposable build files. Keep it out of Git. Before trying this with customer data, confirm that your project's rules allow local copies.
+
+## What conversion actually changes
+
+Now the notebook has somewhere to run. We need to get it into a format our Jupyter client can open.
+
+Keep the converter in a separate checkout with its own environment. That way, its Python project doesn't become part of your Fabric repository. In another terminal:
+
+```sh
+git clone https://github.com/binaryrain-net/Binary-Rain-Fabric-Notebook-Converter.git
+cd Binary-Rain-Fabric-Notebook-Converter
+uv sync
+```
+
+Run the conversion from that converter checkout:
+
+```sh
+uv run fabric-nb to-ipynb transform_orders.Notebook --workdir "<absolute path to your Fabric repository>"
+```
+
+Replace the quoted path with your Fabric checkout's absolute path. Passing `--workdir` explicitly keeps the example independent of any directory saved in the converter's configuration.
+
+You'll find `transform_orders.ipynb` beside the original `.Notebook` directory. Open it with the local kernel.
+
+Most of the conversion is bookkeeping. Code and Markdown become Jupyter cells, and Fabric metadata stays available for the return trip. The deliberate addition is a new first cell. Without its comments, it looks like this:
+
+```python
+import os
+
+from binaryrain_fabric_local_pyspark.display import display
+from binaryrain_fabric_local_pyspark.spark import get_local_spark
+from binaryrain_fabric_local_pyspark import notebookutils
+from dotenv import load_dotenv
+
+load_dotenv()
+os.environ["FABRIC_WORKSPACE_ID"] = "<workspace ID from the notebook metadata>"
+os.environ["FABRIC_LAKEHOUSE_ID"] = "<lakehouse ID from the notebook metadata>"
+spark = get_local_spark()
+```
+
+The ID assignments appear only when those values exist in the source notebook's metadata.
+
+Nothing in this cell cleans an order or calculates a total. It supplies the names that our transformation expects Fabric to provide.
+
+`spark` now refers to a local Spark session with replacements for supported reads and writes. `display` renders results in Jupyter. The package also supplies a limited `notebookutils` replacement, currently for `credentials.getSecret`.
+
+The rest of the notebook can use those names without adding environment checks to each cell.
+
+The setup cell carries a `local-dev` tag. On the way back to Fabric, the converter removes every cell with that tag. Leave the generated cell and its tag intact. We want its effect locally, not its code in Fabric.
+
+## Change the rule, keep the data
+
+Run the generated setup cell first.
+
+Before we read anything, make cache activity visible. Add a cell immediately after setup and tag it `local-dev` too:
+
+```python
+import logging
+
+logging.basicConfig(level=logging.INFO, force=True)
+```
+
+The logging configuration will tell us whether a read downloads data or uses a local copy. Both lines of setup belong here, in a tagged cell that won't go back to Fabric.
+
+Now run the first transformation cell. It's an ordinary table read:
+
+```python
+from pyspark.sql import functions as F
+
+orders = spark.table("dbo.local_dev_orders")
+```
+
+The name is still `dbo.local_dev_orders`. There is no local file path in our transformation code. That read goes through the caching layer. On a cache miss, the package resolves the name, reads the current Delta table from OneLake, and stores the data in the cache as Parquet.
+
+On that first read, look for a message beginning with:
+
+```text
+Cache miss, downloading from Fabric:
+```
+
+This first run needs your Azure identity and access to OneLake. Later reads of the same input can use the copy on disk.
+
+The next cell does the actual work. It trims the strings, drops the missing amount, and excludes cancelled orders:
+
+```python
+clean_orders = (
+    orders.withColumn("customer_id", F.trim(F.col("customer_id")))
+    .withColumn("status", F.lower(F.trim(F.col("status"))))
+    .filter(F.col("amount_cents").isNotNull())
+    .filter(F.col("status") != "cancelled")
+)
+```
+
+Group the remaining orders by customer:
+
+```python
+customer_totals = clean_orders.groupBy("customer_id").agg(
+    F.count("*").alias("order_count"),
+    F.sum("amount_cents").alias("total_cents"),
+)
+
+display(customer_totals.orderBy("customer_id"))
+```
+
+The result should be:
+
+| customer_id | order_count | total_cents |
+| --- | --- | --- |
+| C001 | 2 | 15000 |
+| C002 | 2 | 10500 |
+| C003 | 1 | 4500 |
+
+C002's total is 10500 cents. That includes the pending order for 2500.
+
+Suppose we only want completed orders. We already have the input, so there's no reason to fetch it again. Change the last filter:
+
+```python
+.filter(F.col("status") == "completed")
+```
+
+Rerun the cleaning and aggregation cells. C002 now has one order worth 8000 cents. The other totals haven't changed.
+
+This is the edit I wanted to make locally. A different rule, the same eight orders, and an answer I can check without starting another Fabric Spark session.
+
+So far, we've reused the DataFrame from the first read. To check the on-disk cache too, rerun the `spark.table` cell. This time, look for:
+
+```text
+Cache hit, reading local copy:
+```
+
+You can restart the kernel and rerun the notebook as well. The cache survives because it's on disk, not in the Spark session.
+
+There is a tradeoff. A cache hit doesn't ask Fabric whether the table has changed. I get a fixed input while debugging, but it's my responsibility to decide when that input is too old.
+
+### Choose when to fetch fresh data
+
+If an unexpected result comes from stale data, rerunning the same cell won't help. Ask for a fresh copy.
+
+To refresh only our source table, run this in another cell tagged `local-dev`:
+
+```python
+from binaryrain_fabric_local_pyspark.fabric import cache_table
+
+cache_table("Tables/dbo/local_dev_orders", refresh=True)
+```
+
+Remove that refresh cell after using it, then restart the kernel and rerun the notebook. That prevents existing DataFrames from referencing the old files, and prevents every later full run from refreshing the table again.
+
+You can also set `FABRIC_CACHE_REFRESH=1` to force fresh reads across the cache. Unset it when you're done. Leave it enabled and you'll be downloading the same data again on every read, which is exactly what we're trying to avoid.
+
+## Where does the overwrite go?
+
+The next cell contains `overwrite`. Before running it, I want to know exactly where that write will go.
+
+The code is the same in both environments:
+
+```python
+customer_totals.write.format("delta").mode("overwrite").saveAsTable(
+    "dbo.local_dev_customer_totals"
+)
+
+display(spark.table("dbo.local_dev_customer_totals").orderBy("customer_id"))
+```
+
+In Fabric, this writes to the attached lakehouse. With the local package's session, `saveAsTable` writes into the cache instead. The read on the next line returns that local output, under the same table name. This supported write doesn't update OneLake.
+
+That lets me test the output without changing the source lakehouse. But the local output is Parquet, even when the code requests Delta. The package supports both format names locally; it doesn't reproduce Delta transaction behavior. A correct total here doesn't prove that every storage operation will behave the same in Fabric.
+
+Nor does it make arbitrary notebook code safe. A separate SDK call or database connection can still write to a remote system. The package redirects the operations it implements, not every way Python can reach your data.
+
+### What `spark.sql` means here
+
+I've kept this example to DataFrame operations because the SQL behavior needs its own explanation.
+
+The local package's `spark.sql` can send a query to Fabric's SQL analytics endpoint and cache the result. That endpoint speaks T-SQL, not Spark SQL. The method name is familiar, but the query may run on a different engine.
+
+Queries against temporary views can run on local Spark, with fallback to the endpoint for certain parsing or table-resolution failures. Queries with non-empty parameters run locally.
+
+If your notebook uses SQL, check which route each query takes before trusting the local result. Installing the package doesn't turn every Fabric query into an equivalent local query, and one cached table doesn't make an entire notebook independent of Fabric.
+
+## Take one changed line back to Fabric
+
+We came here to change a filter, not to create another notebook to maintain. Once the completed-orders rule works locally, save the Jupyter notebook and return it to Fabric's format.
+
+From the converter checkout, run:
+
+```sh
+uv run fabric-nb to-fabric transform_orders.ipynb --workdir "<absolute path to your Fabric repository>"
+```
+
+The converter writes back to `transform_orders.Notebook` and drops the `local-dev` cells. Fabric doesn't need our local Spark initialization or logging setup, so neither should appear in the exported code.
+
+The useful check now is the Git diff. From your Fabric repository:
+
+```sh
+git diff -- transform_orders.Notebook
+```
+
+The meaningful code change should be small. "Not cancelled" has become "completed". If the diff includes local imports or setup code, check the cell tags before syncing anything.
+
+Also check for unexpected metadata changes. Keep the existing `.platform` file, which identifies the Fabric item. The converter doesn't create a replacement for it.
+
+Once the diff looks right, commit and push through your normal workflow. Update the notebook from Git in the development workspace, then run it with the intended Fabric runtime and default lakehouse.
+
+With the same sample input, C001 should still total 15000 cents, C002 should total 8000, and C003 should total 4500. This time, the output is a real lakehouse write.
+
+I don't skip this run. The local test checked the transformation against our input. It didn't check Fabric's runtime or real Delta storage. Moving the debugging work off Fabric doesn't remove the need to validate the finished notebook there.
+
+## What I actually type
+
+The manual setup is useful once. Repeating it for every project isn't.
+
+That's why I put the environment setup into the converter:
+
+```sh
+uv run fabric-nb setup --workdir "<absolute path to your Fabric repository>"
+```
+
+Run this from the converter checkout. Choose your Fabric repository as the setup folder, name the environment, and select uv. The command also asks for the SQL analytics endpoint and default lakehouse name, even though our table-only example doesn't use the endpoint.
+
+It writes the package requirements, updates `.env` and `.gitignore`, installs the environment, registers the Jupyter kernel, and runs `az login`. You can also save the working directory so later converter commands know where to find your notebooks.
+
+You still need to install Java, the Azure CLI, and a Jupyter client yourself. The command automates the Python environment setup; it doesn't install every prerequisite on your machine.
+
+I still give Fabric the final run. What I no longer need to give it is every attempt that comes before it.
+
+The pending-order change ends up in the same Fabric notebook. I just don't need a cloud Spark session to decide whether those 2500 cents belong in the total.
